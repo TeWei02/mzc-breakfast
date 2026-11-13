@@ -237,6 +237,61 @@
     padding:11px 13px;font-size:12.5px;line-height:1.7;margin-bottom:13px;
   }
 
+  /* ===== 外送排程面板 ===== */
+  .sched{background:#fff;border-radius:16px;padding:14px 15px 15px;margin-bottom:13px;
+         box-shadow:0 3px 14px rgba(120,90,70,.09);}
+  .sched .hd{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .sched .hd b{font-size:14.5px;font-weight:900;letter-spacing:.3px;}
+  .sched .hd .tag{font-size:10.5px;font-weight:900;padding:3px 8px;border-radius:8px;
+                  background:#FDE9DC;color:#C9562F;}
+  .sched .hd .sp2{flex:1;}
+  .sched .tip{font-size:11.5px;color:#8E8079;font-weight:600;line-height:1.6;margin-bottom:10px;}
+  .sched .car{display:flex;align-items:center;gap:8px;border-radius:11px;padding:9px 11px;
+              font-size:12px;font-weight:800;line-height:1.5;margin-bottom:9px;}
+  .sched .car.busy{background:#FFF4E3;color:#A8730F;border:1px solid #F3DDB6;}
+  .sched .car.free{background:#EAF6EE;color:#2E7D4F;border:1px solid #C9E7D4;}
+  .sched .stop{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px dashed #EFE3D8;}
+  .sched .stop:first-of-type{border-top:none;}
+  .sched .stop .no{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:#E8734A;color:#fff;
+                   font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+  .sched .stop .zn{font-size:13px;font-weight:900;min-width:52px;}
+  .sched .stop .ids{font-size:11.5px;color:#6F615A;font-weight:700;line-height:1.55;flex:1;word-break:break-all;}
+  .sched .stop .mm{font-size:11.5px;font-weight:900;color:#C9562F;white-space:nowrap;}
+  .sched .go{display:flex;gap:8px;margin-top:11px;}
+  .sched .go button{flex:1;font-size:12.5px;font-weight:900;padding:10px;border-radius:11px;background:#F5EFEA;color:#2B2320;}
+  .sched .go button.main{background:linear-gradient(135deg,#F08A5D,#E8734A);color:#fff;}
+
+  /* 排序方式切換 */
+  .sched .modes{display:flex;gap:6px;margin:9px 0 4px;}
+  .sched .modes button{flex:1;font-size:11px;font-weight:900;padding:7px 4px;border-radius:9px;
+        background:#F5EFEA;color:#8E8079;border:1px solid #EFE3D8;line-height:1.3;}
+  .sched .modes button.on{background:#FDECE1;color:#C9562F;border-color:#F0C6AF;}
+  .sched .mvw{display:flex;flex-direction:column;gap:3px;flex:0 0 auto;}
+  .sched .mvw button{width:26px;height:20px;border-radius:6px;background:#F5EFEA;color:#8E8079;
+        font-size:10px;font-weight:900;border:1px solid #EFE3D8;line-height:1;padding:0;}
+  .sched .mvw button:disabled{opacity:.28;}
+  .sched .stat{margin-top:9px;background:#FBF6F1;border-radius:10px;padding:8px 10px;
+        font-size:11.5px;font-weight:800;color:#8E8079;line-height:1.65;}
+  .sched .stat b{color:#C9562F;}
+
+  /* 通知文案彈窗 */
+  .ntf{position:fixed;inset:0;background:rgba(30,22,18,.55);display:none;
+       align-items:center;justify-content:center;padding:18px;z-index:300;}
+  .ntf.show{display:flex;}
+  .ntf .box{background:#fff;border-radius:18px;width:100%;max-width:420px;padding:18px;
+            box-shadow:0 20px 50px rgba(0,0,0,.3);}
+  .ntf .box h3{font-size:15px;font-weight:900;margin-bottom:4px;}
+  .ntf .box p{font-size:11.5px;color:#8E8079;font-weight:600;line-height:1.6;margin-bottom:10px;}
+  .ntf textarea{width:100%;height:186px;border:1px solid #E8DDD5;border-radius:12px;
+                padding:11px;font-size:12.5px;line-height:1.75;font-family:inherit;
+                color:#2B2320;background:#FFFDFB;resize:none;}
+  .ntf .row{display:flex;gap:8px;margin-top:11px;}
+  .ntf .row button{flex:1;padding:12px;border-radius:12px;font-size:13px;font-weight:900;
+                   background:#F5EFEA;color:#2B2320;}
+  .ntf .row button.main{background:linear-gradient(135deg,#F08A5D,#E8734A);color:#fff;}
+
+  .badge.b-ship{background:#FFF1DC;color:#A8730F;}
+
   @media print{
     .top,.filter,.stats,.icon-btn,.act,.mini,.hint{display:none!important;}
     body{background:#fff;padding:0;}
@@ -283,6 +338,19 @@
 </main>
 
 <div class="toast" id="toast"></div>
+
+<!-- 出車通知文案 -->
+<div class="ntf" id="ntf">
+  <div class="box">
+    <h3>通知客人：<span id="ntfId" style="color:#C9562F">—</span></h3>
+    <p>訂單已標記「已出車」。把下面這段複製，用 LINE 或簡訊傳給客人即可。</p>
+    <textarea id="ntfText" spellcheck="false"></textarea>
+    <div class="row">
+      <button onclick="closeNotify()">關閉</button>
+      <button class="main" onclick="copyNotify()">複製文字</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
@@ -493,22 +561,260 @@ function render(){
   var list = [];
   for (var i=0;i<cache.length;i++){ if (passFilter(cache[i])) list.push(cache[i]); }
 
+  var panel = renderSched();
+
   if (!list.length){
-    $('app').innerHTML =
+    $('app').innerHTML = panel +
       '<div class="empty"><div class="big">🍽️</div>'
       + (filterMode === 'new' ? '沒有未處理的訂單' : '這個時段還沒有訂單')
       + '<br><span style="font-size:12px;">客人送出後會自動出現在這裡</span></div>';
     return;
   }
 
-  var h = '';
+  var h = panel;
   for (var j=0;j<list.length;j++){ h += orderHTML(list[j]); }
   $('app').innerHTML = h;
+}
+
+/* ============================================================
+   外送排程：一台車、順路出車
+   ============================================================ */
+/* ============================================================
+   出車順序：不照訂單先後，照「怎麼跑最順」排
+   ① 近→遠（最省時，飲料最新鮮）
+   ② 遠→近（先跑最遠，回程順路撿近的）
+   ③ 我自己排（手動 ▲▼）
+   ============================================================ */
+var SCHED_MODE_NAME = { near:'近→遠', far:'遠→近', manual:'我自己排' };
+var schedMode = 'near';
+var manualSeq = [];
+try {
+  schedMode = localStorage.getItem('mzc_sched_mode') || 'near';
+  manualSeq = JSON.parse(localStorage.getItem('mzc_sched_seq') || '[]') || [];
+} catch(e){ schedMode = 'near'; manualSeq = []; }
+
+function saveSched(){
+  try {
+    localStorage.setItem('mzc_sched_mode', schedMode);
+    localStorage.setItem('mzc_sched_seq', JSON.stringify(manualSeq));
+  } catch(e){}
+}
+
+function liveDlv(){
+  var arr = [];
+  for (var i=0;i<cache.length;i++){
+    var o = cache[i];
+    if (o.way === '自取') continue;
+    if (o.status === 'done' || o.status === 'cancel') continue;
+    arr.push(o);
+  }
+  return arr;
+}
+
+function pendingDlv(){
+  var all = liveDlv(), arr = [];
+  for (var i=0;i<all.length;i++){ if (all[i].status !== 'shipped') arr.push(all[i]); }
+  return arr;
+}
+
+function kmOf(o){ var k = Number(o.km); return isNaN(k) ? 0 : k; }
+
+function groupByZone(arr){
+  var g = {};
+  for (var i=0;i<arr.length;i++){
+    var z = arr[i].zone || '未填區域';
+    if (!g[z]) g[z] = [];
+    g[z].push(arr[i]);
+  }
+  return g;
+}
+
+/* 該站最遠距離（同站多單取最遠） */
+function zoneKm(groups, z){
+  var m = 0;
+  for (var i=0;i<groups[z].length;i++){ var k = kmOf(groups[z][i]); if (k > m) m = k; }
+  return m;
+}
+
+/* 依目前模式排出站序 */
+function orderZones(groups){
+  var zs = Object.keys(groups);
+  if (schedMode === 'manual'){
+    zs.sort(function(a,b){
+      var ia = manualSeq.indexOf(a), ib = manualSeq.indexOf(b);
+      if (ia < 0 && ib < 0) return zoneKm(groups,a) - zoneKm(groups,b);
+      if (ia < 0) return 1;
+      if (ib < 0) return -1;
+      return ia - ib;
+    });
+    return zs;
+  }
+  zs.sort(function(a,b){
+    var ka = zoneKm(groups,a), kb = zoneKm(groups,b);
+    if (ka === kb) return 0;
+    return schedMode === 'far' ? kb - ka : ka - kb;
+  });
+  return zs;
+}
+
+/* 這趟的里程與時間估算 */
+function tripStat(groups, zs){
+  var maxKm = 0;
+  for (var i=0;i<zs.length;i++){ var k = zoneKm(groups, zs[i]); if (k > maxKm) maxKm = k; }
+  var back = maxKm * 2;                       /* 去 + 回 */
+  var drive = Math.round(back * 4);           /* 台南市區約 4 分/km */
+  var stopMin = zs.length * 3;                /* 每站停車 3 分 */
+  return { maxKm: maxKm, back: back, drive: drive, stops: zs.length,
+           total: drive + stopMin + (zs.length ? 6 : 0) };
+}
+
+function setSchedMode(m){
+  schedMode = m;
+  if (m !== 'manual'){
+    var g = groupByZone(pendingDlv());
+    manualSeq = orderZones(g);       /* 切回自動時記住當下順序 */
+  }
+  saveSched();
+  render();
+}
+
+/* 手動上／下移一站 */
+function moveStop(zone, dir){
+  var groups = groupByZone(pendingDlv());
+  var zs = orderZones(groups);
+  var i = zs.indexOf(zone), j = i + dir;
+  if (i < 0 || j < 0 || j >= zs.length) return;
+  var t = zs[i]; zs[i] = zs[j]; zs[j] = t;
+  manualSeq = zs;
+  schedMode = 'manual';
+  saveSched();
+  render();
+  toast('出車順序已調整：' + zs.join(' → '));
+}
+
+function renderSched(){
+  var all = liveDlv();
+  if (!all.length) return '';
+
+  var shipped = [], wait = [];
+  for (var i=0;i<all.length;i++){ (all[i].status === 'shipped' ? shipped : wait).push(all[i]); }
+
+  var sum = function(arr){ var t=0; for(var i=0;i<arr.length;i++){ t += Number(arr[i].total)||0; } return t; };
+
+  var h = '<div class="sched">';
+  h += '<div class="hd"><b>外送排程</b><span class="tag">一台車・照最順的跑</span><div class="sp2"></div>'
+    + '<span style="font-size:11px;color:#8E8079;font-weight:800;">' + (wait.length + shipped.length) + ' 單</span></div>';
+
+  /* 車況 */
+  if (shipped.length){
+    var sGroups = groupByZone(shipped);
+    var sZs = orderZones(sGroups);
+    var sStat = tripStat(sGroups, sZs);
+    var who = [];
+    for (var i=0;i<shipped.length;i++){ who.push((shipped[i].zone || '外送') + ' ' + shipped[i].id); }
+    h += '<div class="car busy">🛵 <b>車已出車</b>：' + esc(who.join('、'))
+      + '<br>合計 ' + money(sum(shipped)) + '・這趟約 ' + sStat.total + ' 分鐘回來'
+      + '<br>車還沒回來前，先不要接新的外送單</div>';
+  } else {
+    h += '<div class="car free">🛵 車在店裡，可以出車</div>';
+  }
+
+  if (!wait.length){ h += '</div>'; return h; }
+
+  var groups = groupByZone(wait);
+  var zs = orderZones(groups);
+  var stat = tripStat(groups, zs);
+
+  /* 排序方式：不照訂單順序，照最順 */
+  h += '<div class="modes">'
+    + '<button class="' + (schedMode === 'near' ? 'on' : '') + '" onclick="setSchedMode(\'near\')">近→遠<br>最省時</button>'
+    + '<button class="' + (schedMode === 'far' ? 'on' : '') + '" onclick="setSchedMode(\'far\')">遠→近<br>先跑最遠</button>'
+    + '<button class="' + (schedMode === 'manual' ? 'on' : '') + '" onclick="setSchedMode(\'manual\')">我自己排<br>▲▼</button>'
+    + '</div>';
+
+  for (var k=0;k<zs.length;k++){
+    var g = groups[zs[k]];
+    var km = zoneKm(groups, zs[k]);
+    var ids = [];
+    for (var i=0;i<g.length;i++){ ids.push(g[i].id + '（' + money(Number(g[i].total)||0) + '）'); }
+    var mins2 = km ? Math.round(km * 4) : 0;
+    var eta = g[0].etaText ? '・' + g[0].etaText : '';
+    h += '<div class="stop">'
+      + '<div class="no">' + (k + 1) + '</div>'
+      + '<div class="zn">' + esc(zs[k]) + '</div>'
+      + '<div class="ids">' + esc(ids.join('、')) + '<br><span style="color:#A89A92;font-weight:700;">'
+      + (km ? '距離 ' + km + 'km・車程約 ' + mins2 + ' 分' : '距離未填')
+      + (g.length > 1 ? '・同區 ' + g.length + ' 單一起送' : '') + esc(eta) + '</span></div>'
+      + '<div class="mvw">'
+      + '<button onclick="moveStop(\'' + esc(zs[k]) + '\',-1)"' + (k === 0 ? ' disabled' : '') + '>▲</button>'
+      + '<button onclick="moveStop(\'' + esc(zs[k]) + '\',1)"' + (k === zs.length - 1 ? ' disabled' : '') + '>▼</button>'
+      + '</div>'
+      + '<div class="mm">第' + (k + 1) + '站</div>'
+      + '</div>';
+  }
+
+  /* 建議跑法 */
+  var route = [];
+  for (var k=0;k<zs.length;k++){ route.push('第' + (k + 1) + '站 ' + zs[k]); }
+  h += '<div class="tip" style="margin:10px 0 0;">照這個跑：' + esc(route.join(' → '))
+    + '　合計 ' + money(sum(wait)) + '</div>';
+
+  h += '<div class="stat">跑法：<b>' + SCHED_MODE_NAME[schedMode] + '</b>'
+    + '・最遠 <b>' + (stat.maxKm ? stat.maxKm + 'km' : '未填') + '</b>'
+    + (stat.maxKm ? '・去回 ' + stat.back + 'km・車程＋停車約 <b>' + stat.total + ' 分</b>' : '')
+    + '<br><span style="font-weight:700;color:#A89A92;">想改順序就按 ▲▼，排一次之後會記住</span></div>';
+
+  h += '<div class="go">'
+    + '<button onclick="copyRoute()">複製出車順序</button>'
+    + '<button class="main" onclick="shipAll()">整趟出車</button>'
+    + '</div>';
+
+  h += '</div>';
+  return h;
+}
+
+/* 建議路線文字 */
+function routeText(){
+  var wait = pendingDlv();
+  if (!wait.length) return '';
+  var groups = groupByZone(wait);
+  var zs = orderZones(groups);
+  var stat = tripStat(groups, zs);
+  var L = [];
+  L.push('【今天外送・照最順跑】一台車，' + SCHED_MODE_NAME[schedMode] + '：');
+  for (var k=0;k<zs.length;k++){
+    var g = groups[zs[k]], ids = [], t = 0;
+    for (var i=0;i<g.length;i++){ ids.push(g[i].id); t += Number(g[i].total)||0; }
+    L.push((k+1) + '. ' + zs[k] + '　' + ids.join('、') + '　' + money(t)
+      + (g[0].addr ? '　' + g[0].addr : ''));
+  }
+  if (stat.maxKm) L.push('（最遠 ' + stat.maxKm + 'km・去回約 ' + stat.back + 'km・整趟約 ' + stat.total + ' 分）');
+  return L.join('\n');
+}
+
+function copyRoute(){
+  var txt = routeText();
+  if (!txt){ toast('目前沒有待送外送單'); return; }
+  copyText(txt, '出車順序已複製');
+}
+
+
+function shipAll(){
+  var ids = [];
+  var all = liveDlv();
+  for (var i=0;i<all.length;i++){ if (all[i].status !== 'shipped') ids.push(all[i].id); }
+  if (!ids.length) return;
+  for (var i=0;i<ids.length;i++){ setStatus(ids[i], 'shipped', true); }
+  toast('已出車 ' + ids.length + ' 單，記得通知客人');
+  var first = null;
+  for (var i=0;i<cache.length;i++){ if (cache[i].id === ids[0]) first = cache[i]; }
+  if (first) openNotify(first.id);
 }
 
 function statusBadge(s){
   if (s === 'new')     return '<span class="badge b-new">新訂單</span>';
   if (s === 'making')  return '<span class="badge b-making">製作中</span>';
+  if (s === 'shipped') return '<span class="badge b-ship">已出車</span>';
   if (s === 'done')    return '<span class="badge b-done">已完成</span>';
   if (s === 'cancel')  return '<span class="badge b-cancel">已取消</span>';
   return '<span class="badge b-new">新訂單</span>';
@@ -592,7 +898,17 @@ function orderHTML(o){
     h += '<button class="act go" onclick="setStatus(\'' + esc(o.id) + '\',\'making\')">接單</button>'
       +  '<button class="act no" onclick="setStatus(\'' + esc(o.id) + '\',\'cancel\')">取消</button>';
   } else if (st === 'making'){
-    h += '<button class="act ok" onclick="setStatus(\'' + esc(o.id) + '\',\'done\')">完成</button>'
+    if (!isPick){
+      h += '<button class="act go" onclick="shipOrder(\'' + esc(o.id) + '\')">出車</button>'
+        +  '<button class="act ok" onclick="setStatus(\'' + esc(o.id) + '\',\'done\')">完成</button>'
+        +  '<button class="act no" onclick="setStatus(\'' + esc(o.id) + '\',\'cancel\')">取消</button>';
+    } else {
+      h += '<button class="act ok" onclick="setStatus(\'' + esc(o.id) + '\',\'done\')">完成</button>'
+        +  '<button class="act no" onclick="setStatus(\'' + esc(o.id) + '\',\'cancel\')">取消</button>';
+    }
+  } else if (st === 'shipped'){
+    h += '<button class="act ok" onclick="setStatus(\'' + esc(o.id) + '\',\'done\')">送達完成</button>'
+      +  '<button class="act" onclick="openNotify(\'' + esc(o.id) + '\')">通知文案</button>'
       +  '<button class="act no" onclick="setStatus(\'' + esc(o.id) + '\',\'cancel\')">取消</button>';
   } else {
     h += '<button class="act" onclick="setStatus(\'' + esc(o.id) + '\',\'new\')">改回新單</button>';
@@ -605,7 +921,7 @@ function orderHTML(o){
 /* ============================================================
    改狀態
    ============================================================ */
-function setStatus(id, st){
+function setStatus(id, st, silent){
   if (!API) return;
 
   /* 先本地更新，畫面立即反應 */
@@ -620,12 +936,70 @@ function setStatus(id, st){
     + '&id=' + encodeURIComponent(id)
     + '&status=' + encodeURIComponent(st);
 
-  toast('已更新');
+  if (!silent) toast('已更新');
 
   /* 用圖片請求送出，不受 CORS 限制 */
   var img = new Image();
   img.onerror = img.onload = function(){};
   img.src = url + '&_=' + Date.now();
+}
+
+/* ============================================================
+   出車 + 通知客人
+   ============================================================ */
+function getOrder(id){
+  for (var i=0;i<cache.length;i++){ if (cache[i].id === id) return cache[i]; }
+  return null;
+}
+
+function shipOrder(id){
+  var o = getOrder(id);
+  if (!o) return;
+  setStatus(id, 'shipped', true);
+  toast('已標記出車');
+  openNotify(id);
+}
+
+/* 給客人的通知文字 */
+function notifyText(id){
+  var o = getOrder(id);
+  var t = [];
+  t.push('【美之晨】您好，您的餐點已經出車了 🛵');
+  t.push('訂單編號：' + id);
+  if (o){
+    if (o.zone) t.push('外送區域：' + o.zone + (o.stop ? '（順路第 ' + o.stop + ' 站）' : ''));
+    if (o.etaText) t.push('預計送達：' + o.etaText);
+    if (o.total) t.push('金額：' + money(Number(o.total) || 0) + '（' + (o.pay || '') + '）');
+  }
+  t.push('');
+  t.push('我們只有一台車，沿路順路送，');
+  t.push('路況或距離比較遠的話，可能會晚 5～10 分鐘，請留意電話。');
+  t.push('');
+  t.push('有問題直接打 06-2434314 找我們，謝謝你！');
+  return t.join('\n');
+}
+
+function openNotify(id){
+  var ta = $('ntfText');
+  var box = $('ntf');
+  $('ntfId').textContent = id;
+  ta.value = notifyText(id);
+  box.classList.add('show');
+}
+
+function closeNotify(){
+  $('ntf').classList.remove('show');
+}
+
+function copyNotify(){
+  copyText($('ntfText').value, '通知文字已複製，貼到 LINE 或簡訊給客人');
+}
+
+function copyText(txt, msg){
+  var ok = function(){ toast(msg || '已複製'); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok).catch(function(){ fb(txt, ok); });
+  } else { fb(txt, ok); }
 }
 
 /* ============================================================
