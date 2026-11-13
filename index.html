@@ -654,6 +654,14 @@
   nav button{color:#8E7C71 !important;font-weight:600;}
   nav button.on{color:var(--brand-d) !important;}
 
+  .dlv-go{
+    margin-top:7px;font-size:11.5px;font-weight:700;color:var(--ink-3);text-align:center;
+  }
+  .pay-note{
+    margin:2px 0 10px;font-size:11.5px;line-height:1.6;font-weight:600;color:var(--ink-2);
+    background:var(--brand-l);border:1px solid #F6DCCB;border-radius:11px;padding:8px 11px;
+  }
+  .pay-note b{color:var(--brand-d);}
   /* ================= 外送路線圖 ================= */
   .route-card{
     margin-top:15px;border:1px solid var(--line);border-radius:16px;
@@ -817,7 +825,7 @@
     <div class="chili-card">
       <span class="chili-tag">限量自製</span>
       <h3>自製辣椒醬 <span>750ml</span></h3>
-      <p>店內每日現炒，玻璃瓶裝 750ml。拌麵、沾蛋餅、配鍋燒都對味。<br>可現場取貨，也可宅配到府（運費另計）。</p>
+      <p>店內每日現炒，玻璃瓶裝 750ml。拌麵、沾蛋餅、配鍋燒都對味。<br>可現場取貨，也可宅配到府（7-11 賣貨便／黑貓，運費另計，詳情洽店家）。</p>
       <div class="chili-buy">
         <div class="chili-price">NT$150<span> / 瓶</span></div>
         <button class="chili-btn" onclick="addSimple('自製辣椒醬 750ml',150)">加入訂單</button>
@@ -1019,6 +1027,7 @@
       <div class="dlv-prog"><i id="dlvProg"></i></div>
       <div class="dlv-hint no" id="dlvHint">再點 NT$&nbsp;150 即可外送</div>
       <div class="dlv-fee" id="dlvFeeRow"><span>外送費</span><b id="dlvFeeTxt">NT$&nbsp;0</b></div>
+      <div class="dlv-go">依實際訂單出車・店家確認後出發</div>
     </div>
 
     <div class="zone-wrap" id="zoneWrap">
@@ -1055,6 +1064,7 @@
     </div>
 
     <div class="opt-label">付款方式</div>
+    <p class="pay-note">線上金流開通中：選線上付款後，店家會用電話或 LINE 給你付款連結，<b>付款完成才出車</b>（避免跑單）。</p>
     <div class="pay-list" id="payList">
       <button class="pay on" data-pay="現金／取餐付款" onclick="pickPay(this)">
         <div class="ico">💵</div>
