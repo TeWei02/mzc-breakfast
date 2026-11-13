@@ -21,6 +21,7 @@
     --line-2:#F6EEE7;
     --bg:#FBF7F3;
     --ok:#3C9A6E;
+    --wrap:720px;
     --radius:18px;
     --radius-s:13px;
     --sh-1:0 1px 3px rgba(70,45,30,.05), 0 6px 18px rgba(70,45,30,.055);
@@ -60,7 +61,7 @@
     content:"";position:absolute;left:-46px;bottom:-72px;width:160px;height:160px;
     border-radius:50%;background:rgba(255,255,255,.08);
   }
-  .hero-inner{position:relative;z-index:2;max-width:720px;margin:0 auto;}
+  .hero-inner{position:relative;z-index:2;max-width:var(--wrap);margin:0 auto;}
   .brand-row{display:flex;align-items:center;gap:14px;}
   .logo{
     width:56px;height:56px;border-radius:17px;flex:0 0 auto;
@@ -93,7 +94,7 @@
   .actions svg{width:15px;height:15px;flex:0 0 auto;}
 
   /* ================= 人氣精選 ================= */
-  .hot-wrap{max-width:720px;margin:-16px auto 0;padding:0 14px;position:relative;z-index:5;}
+  .hot-wrap{max-width:var(--wrap);margin:-16px auto 0;padding:0 14px;position:relative;z-index:5;}
   .hot-box{
     background:#fff;border-radius:var(--radius);padding:14px 0 12px;
     box-shadow:var(--sh-2);border:1px solid var(--line-2);
@@ -129,7 +130,7 @@
   }
   .nav-in{
     display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
-    max-width:720px;margin:0 auto;padding:0 14px;
+    max-width:var(--wrap);margin:0 auto;padding:0 14px;
   }
   .nav-in::-webkit-scrollbar{display:none;}
   nav button{
@@ -142,7 +143,7 @@
     box-shadow:0 3px 12px rgba(232,115,74,.34);
   }
 
-  main{max-width:720px;margin:0 auto;padding:18px 14px 8px;}
+  main{max-width:var(--wrap);margin:0 auto;padding:18px 14px 8px;}
   section{margin-bottom:30px;scroll-margin-top:62px;}
   .sec-head{display:flex;align-items:center;gap:9px;margin:0 3px 12px;}
   .sec-head .ic{
@@ -158,7 +159,7 @@
 
   /* ================= 卡片 ================= */
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  @media(min-width:600px){.grid{grid-template-columns:1fr 1fr 1fr;}}
+  @media(min-width:600px){.grid{grid-template-columns:repeat(auto-fill,minmax(228px,1fr));}}
   .card{
     position:relative;background:#fff;border:1px solid var(--line);border-radius:var(--radius);
     padding:14px 13px 13px;text-align:left;box-shadow:var(--sh-1);
@@ -648,6 +649,32 @@
   }
   nav button{color:#8E7C71 !important;font-weight:600;}
   nav button.on{color:var(--brand-d) !important;}
+
+  /* ================= 外送路線圖 ================= */
+  .route-card{
+    margin-top:15px;border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(180deg,#FFFDFB,#FDF5F0);padding:14px 14px 12px;
+  }
+  .route-card h4{margin:0 0 3px;font-size:14px;font-weight:900;letter-spacing:.4px;}
+  .route-card .rt-sub{margin:0 0 4px;font-size:11.5px;color:var(--ink-3);font-weight:600;}
+  .route-card svg{width:100%;height:auto;display:block;}
+  .route-note{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
+  .route-note span{
+    font-size:11px;background:#fff;border:1px solid var(--line);color:var(--ink-2);
+    padding:3px 9px;border-radius:20px;font-weight:700;
+  }
+
+  /* ================= 寬螢幕：收掉兩側空白 ================= */
+  @media(min-width:900px){
+    :root{--wrap:1020px;}
+    main{padding:22px 20px 10px;}
+    .hot-wrap{padding:0 20px;}
+    .nav-in{padding:0 20px;}
+    .info-card{padding:22px;}
+  }
+  @media(min-width:1240px){
+    :root{--wrap:1180px;}
+  }
 </style>
 </head>
 <body>
@@ -810,6 +837,83 @@
       <h3 style="margin:19px 0 6px;">營業時間</h3>
       <table class="hours" id="hoursTable"></table>
 
+            <div class="route-card">
+        <h4>外送路線圖</h4>
+        <p class="rt-sub">依順路出車順序 1 → 2 → 3 配送・台南永康</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 440" role="img" aria-label="美之晨外送路線圖：鹽行、大橋、六甲頂">
+  <defs>
+    <linearGradient id="rgBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFDFB"/><stop offset="100%" stop-color="#FDF4EE"/>
+    </linearGradient>
+    <marker id="arrA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#E8734A"/>
+    </marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4A7CC7"/>
+    </marker>
+    <marker id="arrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#3C9A6E"/>
+    </marker>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#462D1E" flood-opacity="0.13"/>
+    </filter>
+  </defs>
+
+  <rect width="660" height="440" fill="url(#rgBg)"/>
+
+  <!-- 距離示意圈 -->
+  <g fill="none" stroke="#EADFD6" stroke-dasharray="4 7" stroke-width="1.4">
+    <circle cx="330" cy="215" r="60"/>
+    <circle cx="330" cy="215" r="118"/>
+    <circle cx="330" cy="215" r="176"/>
+  </g>
+
+  <!-- 路線 -->
+  <path d="M298 215 C250 194 200 236 156 215" fill="none" stroke="#E8734A" stroke-width="3.4"
+        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrA)" opacity=".9"/>
+  <path d="M330 183 C352 152 308 122 330 100" fill="none" stroke="#4A7CC7" stroke-width="3.4"
+        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrB)" opacity=".9"/>
+  <path d="M330 247 C308 278 352 312 330 340" fill="none" stroke="#3C9A6E" stroke-width="3.4"
+        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrC)" opacity=".9"/>
+
+  <!-- 店家 -->
+  <circle cx="330" cy="215" r="30" fill="#E8734A" filter="url(#soft)"/>
+  <circle cx="330" cy="215" r="24" fill="none" stroke="#fff" stroke-width="1.6" opacity=".55"/>
+  <text x="330" y="224" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="22" font-weight="800"
+        fill="#fff" text-anchor="middle">晨</text>
+  <text x="330" y="272" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="13" font-weight="800"
+        fill="#2B2320" text-anchor="middle" stroke="#FFFDFB" stroke-width="4.5" paint-order="stroke" style="paint-order:stroke">美之晨・新興街 272 號</text>
+  <text x="330" y="176" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" font-weight="700"
+        fill="#C9562F" text-anchor="middle" stroke="#FFFDFB" stroke-width="4" paint-order="stroke" style="paint-order:stroke">出車起點</text>
+
+  <!-- 鹽行（西） -->
+  <circle cx="150" cy="215" r="9" fill="#fff" stroke="#E8734A" stroke-width="4"/>
+  <rect x="122" y="238" width="56" height="21" rx="10.5" fill="#FCEFE8"/>
+  <text x="150" y="253" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#C9562F" text-anchor="middle">第 1 站</text>
+  <text x="150" y="283" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320" text-anchor="middle">鹽行</text>
+  <text x="150" y="303" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760" text-anchor="middle">1.2 km・約 15 分</text>
+  <text x="150" y="322" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A" text-anchor="middle">往西・鹽行里／新興街</text>
+
+  <!-- 大橋（北） -->
+  <circle cx="330" cy="92" r="9" fill="#fff" stroke="#4A7CC7" stroke-width="4"/>
+  <rect x="356" y="72" width="56" height="21" rx="10.5" fill="#E9F0FA"/>
+  <text x="384" y="87" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#2F5F9E" text-anchor="middle">第 2 站</text>
+  <text x="424" y="70" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320">大橋</text>
+  <text x="424" y="90" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760">2.1 km・約 22 分</text>
+  <text x="424" y="109" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A">往北・大橋／中華路</text>
+
+  <!-- 六甲頂（南） -->
+  <circle cx="330" cy="348" r="9" fill="#fff" stroke="#3C9A6E" stroke-width="4"/>
+  <rect x="356" y="328" width="56" height="21" rx="10.5" fill="#E7F3EC"/>
+  <text x="384" y="343" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#2C7754" text-anchor="middle">第 3 站</text>
+  <text x="432" y="326" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320">六甲頂</text>
+  <text x="432" y="346" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760">3.0 km・約 30 分</text>
+  <text x="432" y="365" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A">往南・六甲頂／中山南路</text>
+
+  <text x="24" y="30" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" fill="#B9A79C">示意圖・非等比例</text>
+</svg>
+        <div class="route-note"><span>低消 NT$150</span><span>滿 NT$300 免運</span><span>未達加收 NT$30</span><span>時段 05:30–10:30</span></div>
+      </div>
       <div class="map-wrap">
         <div class="map-fallback" id="mapFallback">
           <div class="pin">📍</div>
