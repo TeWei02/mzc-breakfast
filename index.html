@@ -6,11 +6,7 @@
 <meta name="theme-color" content="#E8734A">
 <title>美之晨 · 線上點餐｜台南永康 現做早餐</title>
 <meta name="description" content="美之晨早餐店線上點餐，台南市永康區新興街272號。吐司、漢堡、蛋餅、抓餅、丹麥、總匯、鍋燒麵、現炸點心，外送自取。手作辣椒醬 750ml 一瓶 150 元。">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23E8734A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>晨</text>  <text x="40" y="352" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="13" font-weight="800" fill="#C9562F">運費 NT$30</text>
-  <text x="136" y="352" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12" font-weight="700" fill="#786760">滿 NT$300 免運</text>
-  <text x="40" y="374" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12" font-weight="700" fill="#786760">低消 NT$150・時段 05:30–10:30</text>
-  <text x="40" y="396" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" fill="#A2918A">依客人實際訂單出車，非固定巡迴</text>
-</svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23E8734A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>晨</text></svg>">
 <style>
   :root{
     --brand:#E8734A;
@@ -662,19 +658,60 @@
     background:var(--brand-l);border:1px solid #F6DCCB;border-radius:11px;padding:8px 11px;
   }
   .pay-note b{color:var(--brand-d);}
-  /* ================= 外送路線圖 ================= */
-  .route-card{
+  .drink-cap{margin:-2px 0 10px;font-size:11.5px;font-weight:700;color:var(--ink-2);
+    background:#fff;border:1px solid var(--line);border-radius:11px;padding:7px 11px;}
+  .drink-cap b{color:var(--brand-d);}
+
+  /* ================= 外送配送與收費 ================= */
+  .dlv-card{
     margin-top:15px;border:1px solid var(--line);border-radius:16px;
-    background:linear-gradient(180deg,#FFFDFB,#FDF5F0);padding:14px 14px 12px;
+    background:linear-gradient(180deg,#FFFDFB,#FDF5F0);padding:14px 14px 13px;
   }
-  .route-card h4{margin:0 0 3px;font-size:14px;font-weight:900;letter-spacing:.4px;}
-  .route-card .rt-sub{margin:0 0 4px;font-size:11.5px;color:var(--ink-3);font-weight:600;}
-  .route-card svg{width:100%;height:auto;display:block;}
-  .route-note{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;}
-  .route-note span{
-    font-size:11px;background:#fff;border:1px solid var(--line);color:var(--ink-2);
-    padding:3px 9px;border-radius:20px;font-weight:700;
-  }
+  .dlv-card h4{margin:0 0 3px;font-size:14.5px;font-weight:900;letter-spacing:.4px;}
+  .dlv-card .rt-sub{margin:0 0 11px;font-size:11.5px;color:var(--ink-3);font-weight:600;line-height:1.5;}
+  .step-list{display:flex;flex-direction:column;gap:8px;}
+  .step{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+    border-radius:12px;padding:9px 11px;}
+  .step .sn{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--brand-l);
+    color:var(--brand-d);font-size:11.5px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+  .step .st{font-size:12.5px;font-weight:800;line-height:1.45;}
+  .step .st small{display:block;font-size:10.5px;font-weight:600;color:var(--ink-3);margin-top:1px;}
+  .fee-tb{width:100%;border-collapse:collapse;margin-top:12px;}
+  .fee-tb tr{border-bottom:1px dashed var(--line);}
+  .fee-tb tr:last-child{border-bottom:none;}
+  .fee-tb td{padding:6px 0;font-size:12.5px;font-weight:700;color:var(--ink);}
+  .fee-tb td:first-child{color:var(--ink-2);font-weight:600;}
+  .fee-tb td:last-child{text-align:right;font-weight:900;}
+  .fee-tb td b{color:var(--brand-d);}
+  .dlv-tip{margin-top:10px;font-size:11px;line-height:1.6;font-weight:600;color:var(--ink-2);
+    background:#fff;border:1px dashed #E7D8CC;border-radius:11px;padding:8px 11px;}
+
+  /* ================= 店內注意事項 ================= */
+  .nt-list{display:flex;flex-direction:column;gap:10px;}
+  .nt{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 13px;}
+  .nt-h{display:flex;align-items:center;gap:9px;}
+  .nt-h .nn{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--brand-l);
+    color:var(--brand-d);font-size:12.5px;font-weight:900;display:flex;align-items:center;justify-content:center;}
+  .nt-h .nt-cn{font-size:14px;font-weight:900;}
+  .nt-h .nt-en{font-size:10px;font-weight:700;color:var(--ink-3);letter-spacing:.4px;margin-top:1px;}
+  .nt-b{margin-top:9px;font-size:12.5px;font-weight:700;line-height:1.6;color:var(--ink);}
+  .nt-b i{font-style:normal;color:var(--brand-d);}
+  .nt-en-b{font-size:10.5px;font-weight:600;color:var(--ink-3);line-height:1.5;margin-top:3px;}
+  .sauce-row{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;margin-top:9px;}
+  .sauce-row .sc{flex:1;background:var(--brand-l);border-radius:11px;padding:8px 4px;text-align:center;}
+  .sauce-row .sc b{display:block;font-size:13px;font-weight:900;color:var(--brand-d);}
+  .sauce-row .sc span{display:block;font-size:9.5px;font-weight:700;color:var(--ink-3);margin-top:1px;}
+  .sauce-row .sa{flex:0 0 auto;color:#D8C6BA;font-weight:900;font-size:14px;}
+  .sauce-dir{text-align:center;font-size:10px;font-weight:700;color:var(--ink-3);letter-spacing:.5px;margin-top:6px;}
+  .tier-row{display:flex;align-items:center;gap:8px;background:#FDF7F3;border-radius:10px;padding:7px 10px;margin-top:6px;}
+  .tier-row .tn{flex:0 0 auto;background:var(--brand);color:#fff;border-radius:7px;padding:1px 7px;
+    font-size:10.5px;font-weight:900;}
+  .tier-row .tt{font-size:12.5px;font-weight:900;}
+  .tier-row .te{font-size:10px;font-weight:700;color:var(--ink-3);}
+  .two-col{display:flex;gap:8px;margin-top:9px;}
+  .two-col > div{flex:1;border:1px dashed #E7D8CC;border-radius:11px;padding:8px 10px;}
+  .two-col b{display:block;font-size:12.5px;font-weight:900;}
+  .two-col small{display:block;font-size:10px;font-weight:600;color:var(--ink-3);margin-top:1px;line-height:1.45;}
 
   /* ================= 寬螢幕：收掉兩側空白 ================= */
   @media(min-width:900px){
@@ -738,6 +775,7 @@
   <button data-go="sec-fry">炸物</button>
   <button data-go="sec-pan">香煎</button>
   <button data-go="sec-chili">辣椒醬</button>
+  <button data-go="sec-notice">店內須知</button>
   <button data-go="sec-info">店家資訊</button>
  </div>
 </nav>
@@ -770,8 +808,9 @@
     <div class="sec-head">
       <div class="ic">🥤</div>
       <h2>冷熱飲</h2>
-      <span class="cnt">小杯 / 大杯</span>
+      <span class="cnt">小杯 550ml / 大杯 750ml</span>
     </div>
+    <div class="drink-cap">小杯 <b>550ml</b>　・　大杯 <b>750ml</b>　・　溫的放桌上、冰的在冰箱，自取即可</div>
     <div class="grid" id="grid-drink"></div>
   </section>
 
@@ -833,6 +872,83 @@
     </div>
   </section>
 
+  <section id="sec-notice">
+    <div class="sec-head">
+      <div class="ic">🧭</div>
+      <h2>店內動線與取餐</h2>
+      <span class="cnt">中英對照</span>
+    </div>
+    <div class="nt-list">
+
+      <div class="nt">
+        <div class="nt-h"><div class="nn">1</div><div>
+          <div class="nt-cn">醬料檯（櫃檯／外帶）</div>
+          <div class="nt-en">SAUCES AT THE COUNTER · TAKE-OUT</div>
+        </div></div>
+        <div class="sauce-row">
+          <div class="sc"><b>番茄醬</b><span>Ketchup</span></div>
+          <div class="sa">→</div>
+          <div class="sc"><b>甜辣醬</b><span>Sweet chili</span></div>
+          <div class="sa">→</div>
+          <div class="sc"><b>醬油膏</b><span>Soy paste</span></div>
+        </div>
+        <div class="sauce-dir">← 左　LEFT　　　RIGHT 右 →</div>
+        <div class="nt-b">內用桌的醬料：<i>最左邊是甜辣醬，再來是醬油膏</i>；要番茄醬的話跟我們說一聲，我們拿給你。</div>
+        <div class="nt-en-b">Dine-in table: sweet chili on the left, then soy paste. Ask us if you need ketchup.</div>
+      </div>
+
+      <div class="nt">
+        <div class="nt-h"><div class="nn">2</div><div>
+          <div class="nt-cn">胡椒粉・袋子</div>
+          <div class="nt-en">PEPPER &amp; BAGS</div>
+        </div></div>
+        <div class="two-col">
+          <div><b>胡椒粉 Pepper</b><small>找店員，我們幫你裝</small></div>
+          <div><b>袋子 Bags</b><small>找店員，我們幫你裝</small></div>
+        </div>
+        <div class="nt-b">需要的話直接跟我們說一聲就好，不用自己找。</div>
+        <div class="nt-en-b">Please ask our staff — we will pack it for you.</div>
+      </div>
+
+      <div class="nt">
+        <div class="nt-h"><div class="nn">3</div><div>
+          <div class="nt-cn">包子・饅頭（桌子右邊，可自行取用）</div>
+          <div class="nt-en">STEAMED BUNS &amp; MANTOU · RIGHT-SIDE TABLE · SELF-SERVICE</div>
+        </div></div>
+        <div class="tier-row"><div class="tn">第一層</div><div class="tt">肉包</div><div class="te">Meat bun</div></div>
+        <div class="tier-row"><div class="tn">第二層</div><div class="tt">菜包</div><div class="te">Vegetable bun</div></div>
+        <div class="tier-row"><div class="tn">第三層</div><div class="tt">黑糖・芋頭・原味饅頭</div><div class="te">Brown sugar / Taro / Original mantou</div></div>
+      </div>
+
+      <div class="nt">
+        <div class="nt-h"><div class="nn">4</div><div>
+          <div class="nt-cn">飲料（小杯 550ml・大杯 750ml）</div>
+          <div class="nt-en">DRINKS · SMALL 550ml / LARGE 750ml</div>
+        </div></div>
+        <div class="two-col">
+          <div><b>溫的 · 桌上</b><small>Warm drinks — on the table</small></div>
+          <div><b>冰的 · 冰箱</b><small>Cold drinks — in the fridge</small></div>
+        </div>
+        <div class="nt-b">架上沒了的話，問一下店員還有沒有。</div>
+        <div class="nt-en-b">If it runs out, please ask our staff.</div>
+      </div>
+
+      <div class="nt">
+        <div class="nt-h"><div class="nn">5</div><div>
+          <div class="nt-cn">餐點取餐</div>
+          <div class="nt-en">MEAL PICKUP</div>
+        </div></div>
+        <div class="two-col">
+          <div><b>煎台前面取餐</b><small>Pick up in front of the griddle</small></div>
+          <div><b>其他餐點或客製</b><small>Other items / custom orders</small></div>
+        </div>
+        <div class="nt-b">要其他的、或要客製（不切邊、不加醬、辣一點），直接跟店員說。</div>
+        <div class="nt-en-b">Please tell our staff — we will make it for you.</div>
+      </div>
+
+    </div>
+  </section>
+
   <section id="sec-info">
     <div class="sec-head">
       <div class="ic">📍</div>
@@ -849,82 +965,32 @@
       <h3 style="margin:19px 0 6px;">營業時間</h3>
       <table class="hours" id="hoursTable"></table>
 
-            <div class="route-card">
-        <h4>外送路線圖</h4>
-        <p class="rt-sub">依客人實際訂單出車（非固定巡迴）・台南永康</p>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 440" role="img" aria-label="美之晨外送路線圖：鹽行、大橋、六甲頂">
-  <defs>
-    <linearGradient id="rgBg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FFFDFB"/><stop offset="100%" stop-color="#FDF4EE"/>
-    </linearGradient>
-    <marker id="arrA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#E8734A"/>
-    </marker>
-    <marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#4A7CC7"/>
-    </marker>
-    <marker id="arrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0 0 L10 5 L0 10 z" fill="#3C9A6E"/>
-    </marker>
-    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
-      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#462D1E" flood-opacity="0.13"/>
-    </filter>
-  </defs>
+            <div class="dlv-card">
+        <h4>外送怎麼送・多少錢</h4>
+        <p class="rt-sub">打電話或線上點完單，店家依當趟訂單順路出車（不是固定路線巡迴）</p>
 
-  <rect width="660" height="440" fill="url(#rgBg)"/>
+        <div class="step-list">
+          <div class="step"><div class="sn">1</div><div class="st">點單送出（線上或電話 06-2434314）
+            <small>需要外送請選「外送」並選好區域，我們才知道往哪個方向送</small></div></div>
+          <div class="step"><div class="sn">2</div><div class="st">店家回電確認「金額」與「大約幾點到」
+            <small>金額＝餐點＋外送費（未滿 NT$300 加 NT$30），電話裡會直接跟你說總共多少</small></div></div>
+          <div class="step"><div class="sn">3</div><div class="st">順路出車：鹽行 → 大橋 → 六甲頂
+            <small>同一個時段的多張單會一起載，近的先送、不繞路，所以比你一個人單跑更快</small></div></div>
+          <div class="step"><div class="sn">4</div><div class="st">到場前先打電話，當面交餐付款
+            <small>可付現，或線上付款（像麥當勞、KFC 那樣結帳時直接線上付）</small></div></div>
+        </div>
 
-  <!-- 距離示意圈 -->
-  <g fill="none" stroke="#EADFD6" stroke-dasharray="4 7" stroke-width="1.4">
-    <circle cx="330" cy="215" r="60"/>
-    <circle cx="330" cy="215" r="118"/>
-    <circle cx="330" cy="215" r="176"/>
-  </g>
+        <table class="fee-tb">
+          <tr><td>外送低消</td><td><b>NT$150</b></td></tr>
+          <tr><td>滿額免外送費</td><td>滿 <b>NT$300</b> 免運</td></tr>
+          <tr><td>未達免運門檻</td><td>加收 <b>NT$30</b></td></tr>
+          <tr><td>外送時段</td><td><b>05:30–10:30</b></td></tr>
+          <tr><td>外送範圍</td><td>鹽行・大橋・六甲頂（約 1.2–3.0 km）</td></tr>
+          <tr><td>付款</td><td>送達付現 / 線上付款</td></tr>
+        </table>
 
-  <!-- 路線 -->
-  <path d="M298 215 C250 194 200 236 156 215" fill="none" stroke="#E8734A" stroke-width="3.4"
-        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrA)" opacity=".9"/>
-  <path d="M330 183 C352 152 308 122 330 100" fill="none" stroke="#4A7CC7" stroke-width="3.4"
-        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrB)" opacity=".9"/>
-  <path d="M330 247 C308 278 352 312 330 340" fill="none" stroke="#3C9A6E" stroke-width="3.4"
-        stroke-linecap="round" stroke-dasharray="9 7" marker-end="url(#arrC)" opacity=".9"/>
-
-  <!-- 店家 -->
-  <circle cx="330" cy="215" r="30" fill="#E8734A" filter="url(#soft)"/>
-  <circle cx="330" cy="215" r="24" fill="none" stroke="#fff" stroke-width="1.6" opacity=".55"/>
-  <text x="330" y="224" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="22" font-weight="800"
-        fill="#fff" text-anchor="middle">晨</text>
-  <text x="330" y="272" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="13" font-weight="800"
-        fill="#2B2320" text-anchor="middle" stroke="#FFFDFB" stroke-width="4.5" paint-order="stroke" style="paint-order:stroke">美之晨・新興街 272 號</text>
-  <text x="330" y="176" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" font-weight="700"
-        fill="#C9562F" text-anchor="middle" stroke="#FFFDFB" stroke-width="4" paint-order="stroke" style="paint-order:stroke">出車起點</text>
-
-  <!-- 鹽行（西） -->
-  <circle cx="150" cy="215" r="9" fill="#fff" stroke="#E8734A" stroke-width="4"/>
-  <rect x="122" y="238" width="56" height="21" rx="10.5" fill="#FCEFE8"/>
-  <text x="150" y="253" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#C9562F" text-anchor="middle">第 1 站</text>
-  <text x="150" y="283" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320" text-anchor="middle">鹽行</text>
-  <text x="150" y="303" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760" text-anchor="middle">1.2 km・約 15 分</text>
-  <text x="150" y="322" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A" text-anchor="middle">往西・鹽行里／新興街</text>
-
-  <!-- 大橋（北） -->
-  <circle cx="330" cy="92" r="9" fill="#fff" stroke="#4A7CC7" stroke-width="4"/>
-  <rect x="356" y="72" width="56" height="21" rx="10.5" fill="#E9F0FA"/>
-  <text x="384" y="87" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#2F5F9E" text-anchor="middle">第 2 站</text>
-  <text x="424" y="70" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320">大橋</text>
-  <text x="424" y="90" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760">2.1 km・約 22 分</text>
-  <text x="424" y="109" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A">往北・大橋／中華路</text>
-
-  <!-- 六甲頂（南） -->
-  <circle cx="330" cy="348" r="9" fill="#fff" stroke="#3C9A6E" stroke-width="4"/>
-  <rect x="356" y="328" width="56" height="21" rx="10.5" fill="#E7F3EC"/>
-  <text x="384" y="343" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" font-weight="800" fill="#2C7754" text-anchor="middle">第 3 站</text>
-  <text x="432" y="326" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="18" font-weight="800" fill="#2B2320">六甲頂</text>
-  <text x="432" y="346" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="12.5" font-weight="700" fill="#786760">3.0 km・約 30 分</text>
-  <text x="432" y="365" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11" fill="#A2918A">往南・六甲頂／中山南路</text>
-
-  <text x="24" y="30" font-family="PingFang TC,Noto Sans TC,sans-serif" font-size="11.5" fill="#B9A79C">示意圖・非等比例</text>
-</svg>
-        <div class="route-note"><span>低消 NT$150</span><span>滿 NT$300 免運</span><span>未達加收 NT$30</span><span>時段 05:30–10:30</span></div>
+        <div class="dlv-tip">送到府要收多少，結帳頁會自己算好（餐點＋外送費），不用自己加。<br>
+        超出鹽行、大橋、六甲頂，或同一趟要送去兩個地址，請先電話問一下，我們另行報價。</div>
       </div>
       <div class="map-wrap">
         <div class="map-fallback" id="mapFallback">
@@ -1027,7 +1093,7 @@
       <div class="dlv-prog"><i id="dlvProg"></i></div>
       <div class="dlv-hint no" id="dlvHint">再點 NT$&nbsp;150 即可外送</div>
       <div class="dlv-fee" id="dlvFeeRow"><span>外送費</span><b id="dlvFeeTxt">NT$&nbsp;0</b></div>
-      <div class="dlv-go">依實際訂單出車・店家確認後出發</div>
+      <div class="dlv-go">店家回電確認金額後出車・送達付款</div>
     </div>
 
     <div class="zone-wrap" id="zoneWrap">
@@ -1064,7 +1130,7 @@
     </div>
 
     <div class="opt-label">付款方式</div>
-    <p class="pay-note">線上金流開通中：選線上付款後，店家會用電話或 LINE 給你付款連結，<b>付款完成才出車</b>（避免跑單）。</p>
+    <p class="pay-note">外送一律先電話或線上下單，店家回電確認<b>金額與時間</b>後才出車。<b>可送達時付現，或結帳時直接線上付款</b>（像麥當勞、KFC 線上點餐那樣）；<b>不需要先匯款</b>。</p>
     <div class="pay-list" id="payList">
       <button class="pay on" data-pay="現金／取餐付款" onclick="pickPay(this)">
         <div class="ico">💵</div>
@@ -1073,7 +1139,7 @@
       </button>
       <button class="pay" data-pay="LINE Pay" onclick="pickPay(this)">
         <div class="ico">💚</div>
-        <div class="tx"><b>LINE Pay</b><span>線上付款（開通後啟用）</span></div>
+        <div class="tx"><b>LINE Pay</b><span>線上付款（金流開通後啟用）</span></div>
         <div class="rd"></div>
       </button>
       <button class="pay" data-pay="信用卡／簽帳金融卡" onclick="pickPay(this)">
@@ -1091,8 +1157,8 @@
     <div class="pay-note" id="payNote"></div>
 
     <div class="notice">
-      <b>線上付款說明</b>：LINE Pay、信用卡、Apple Pay 需金流審核通過後才會開啟。<br>
-      目前選線上付款，訂單會標記「待付款」，店家收到後會用電話或 LINE 傳付款連結給您。
+      <b>付款說明</b>：① 送達／取餐時付現　② 結帳時直接線上付款（LINE Pay、信用卡、Apple Pay）。<br>
+      本店<b>沒有先匯款、先轉帳</b>的流程，也不會私訊要你匯款。線上金流審核通過前，線上付款會標示「未開通」，請改選現金，或電話 06-2434314 預訂。
     </div>
 
     <div class="sum">
@@ -1193,7 +1259,7 @@ var JBASES = ['吐司','麵包','厚片','丹麥'];
 var JAM = ['草莓','奶油','花生','巧克力','香蒜','奶酥'];
 var JAM_P = [20,25,30,35];
 
-var DBASES = ['小','大'];
+var DBASES = ['小杯 550ml','大杯 750ml'];
 var DRINK = [
   {n:'紅茶', p:[15,20]},
   {n:'奶茶', p:[20,25]},
@@ -1410,7 +1476,7 @@ function pick(kind, idx){
     desc = '選抹醬的基底。'; label = '基底';
   } else if (kind === 'dr'){
     name = DRINK[idx].n; bases = DBASES; prices = DRINK[idx].p;
-    desc = '冷飲 / 熱飲，選杯型。'; label = '杯型';
+    desc = '冷飲 / 熱飲，選杯型（小杯 550ml・大杯 750ml）。'; label = '杯型';
   } else if (kind === 'nd'){
     name = NOODLE[idx].n; bases = NOODLE[idx].base; prices = NOODLE[idx].p;
     desc = '選麵體（' + NOODLE[idx].note + '）。'; label = '麵體';
@@ -1693,10 +1759,10 @@ function updatePayNote(){
   if (!isOnlinePay()){ el.classList.remove('on'); el.innerHTML = ''; return; }
   el.classList.add('on');
   if (CONFIG.payOnline){
-    el.innerHTML = '<b>' + curPay + '</b>：送出後會跳轉付款頁完成付款，付款成功才算接單。';
+    el.innerHTML = '<b>' + curPay + '</b>：送出後直接跳轉付款頁完成付款（同麥當勞、KFC 線上點餐），付款成功才算接單。';
   } else {
-    el.innerHTML = '<b>' + curPay + '</b>：金流尚未開通，此單會標記「待付款」，'
-                 + '送出後店家會私訊付款連結；也可以到店／取餐時再付。';
+    el.innerHTML = '<b>' + curPay + '</b>：這項線上付款還沒開通，請改選「現金／取餐付款」，'
+                 + '或先電話 06-2434314 預訂。本店不會要求你先匯款。';
   }
 }
 
