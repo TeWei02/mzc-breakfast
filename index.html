@@ -1147,17 +1147,17 @@
       </button>
       <button class="pay" data-pay="LINE Pay" onclick="pickPay(this)">
         <div class="ico">💚</div>
-        <div class="tx"><b>LINE Pay</b><span>金流開通後啟用（目前請選轉帳或現金）</span></div>
+        <div class="tx"><b>LINE Pay</b><span>請選上面的「線上付款」，在綠界頁面選 LINE Pay</span></div>
         <div class="rd"></div>
       </button>
-      <button class="pay" data-pay="信用卡／簽帳金融卡" onclick="pickPay(this)">
+      <button class="pay" data-pay="線上付款（綠界）" onclick="pickPay(this)">
         <div class="ico">💳</div>
-        <div class="tx"><b>信用卡 / 簽帳金融卡</b><span>金流開通後啟用</span></div>
+        <div class="tx"><b>線上付款（信用卡／ATM／超商）</b><span>送出後跳到綠界付款，付完自動入帳</span></div>
         <div class="rd"></div>
       </button>
       <button class="pay" data-pay="Apple Pay" onclick="pickPay(this)">
         <div class="ico">⌘</div>
-        <div class="tx"><b>Apple Pay</b><span>金流開通後啟用</span></div>
+        <div class="tx"><b>Apple Pay</b><span>請選上面的「線上付款」，在綠界頁面選 Apple Pay</span></div>
         <div class="rd"></div>
       </button>
     </div>
@@ -1177,7 +1177,7 @@
 
     <div class="notice">
       <b>付款說明</b>：① 送達／取餐時付現　② 線上轉帳到本店中國信託帳戶（送出後會顯示帳號與金額）　
-      ③ 信用卡／LINE Pay／Apple Pay 待金流開通後啟用。<br>
+      ③ 線上付款（信用卡／ATM／超商）由綠界代收，<b>付款成功系統自動入帳，不用回報</b>。<br>
       轉帳只轉到頁面上這一個帳戶，店家<b>不會私訊或電話要你改匯別的帳號</b>；金額有疑問先打 06-2434314。
     </div>
 
@@ -1779,9 +1779,14 @@ function isOnlinePay(){
 function isTransferPay(){
   return curPay.indexOf('轉帳') >= 0 || curPay.indexOf('匯款') >= 0;
 }
+function isEcpayPay(){
+  return curPay.indexOf('線上付款') >= 0 || curPay.indexOf('信用卡') >= 0;
+}
 function payStatus(){
   if (!isOnlinePay()) return '現場付款';
-  return isTransferPay() ? '待對帳' : '待付款';
+  if (isTransferPay()) return '待對帳';
+  if (isEcpayPay()) return '待付款';
+  return '待付款';
 }
 function last5(){
   var el = document.getElementById('fLast5');
@@ -1805,7 +1810,10 @@ function updatePayNote(){
                  + '店家對到帳就開始做。金額一律用頁面算好的 <b>NT$' + grandTotal() + '</b>。';
     return;
   }
-  if (CONFIG.payOnline){
+  if (isEcpayPay()){
+    el.innerHTML = '<b>線上付款</b>：送出後會跳到綠界付款頁（信用卡／ATM 虛擬帳號／超商代碼），'
+                 + '付款完成系統自動標記已收款，<b>不用再回報末五碼</b>。';
+  } else if (CONFIG.payOnline){
     el.innerHTML = '<b>' + curPay + '</b>：送出後直接跳轉付款頁完成付款，付款成功才算接單。';
   } else {
     el.innerHTML = '<b>' + curPay + '</b>：這項線上付款還沒開通，請改選「轉帳」或「現金／取餐付款」，'
@@ -1828,6 +1836,22 @@ function copyAcct(){
     navigator.clipboard.writeText(t).then(function(){ toast('帳號已複製'); }).catch(function(){ fallbackCopy(t); });
   } else { fallbackCopy(t); }
 }
+
+/* 綠界付款完導回：?paid=1&oid=xxx */
+(function(){
+  try{
+    var q = location.search || '';
+    if (q.indexOf('paid=') < 0) return;
+    var okPay = q.indexOf('paid=1') >= 0;
+    var mm = q.match(/oid=([^&]+)/);
+    var oid = mm ? decodeURIComponent(mm[1]) : '';
+    setTimeout(function(){
+      toast(okPay
+        ? '付款完成，訂單 ' + oid + ' 已自動入帳，店家開始做餐'
+        : '付款尚未完成，訂單 ' + oid + ' 保留中，可再付款一次或改選現金');
+    }, 600);
+  }catch(e){}
+})();
 
 function openCheckout(){
   if (count() === 0){ toast('先點些餐點吧'); return; }
@@ -1963,7 +1987,13 @@ function submitOrder(){
     btn.disabled = false;
     btn.textContent = '送出訂單';
     if (res && res.ok){
-      showDone(res.id || id, txt, true);
+      var finalId = res.id || id;
+      if (isEcpayPay()){
+        showDone(finalId, txt + '\n\n【線上付款】正在前往綠界付款頁…', true);
+        window.location.href = CONFIG.orderApi + '?action=ecpay&id=' + encodeURIComponent(finalId);
+        return;
+      }
+      showDone(finalId, txt, true);
     } else {
       showDone(id, txt, false, res && res.msg);
     }

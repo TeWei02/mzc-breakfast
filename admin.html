@@ -741,6 +741,95 @@ function openGmap(){
   window.open(url, '_blank');
 }
 
+/* 逐單順序（後端排好寫回試算表的 stop / km / etaText） */
+function renderAutoSeq(wait){
+  var arr = wait.slice();
+  var has = false;
+  for (var i=0;i<arr.length;i++){ if (arr[i].stop) { has = true; break; } }
+  if (!has) return '';
+
+  arr.sort(function(a,b){ return (Number(a.stop)||999) - (Number(b.stop)||999); });
+
+  var h = '<div class="tip" style="margin:10px 0 0;background:#F2F7FF;border-color:#C9DCF5;">'
+    + '<b>後端自動排好的逐單順序</b>（依地址實際路網算出，改單後按上面按鈕重算）</div>'
+    + '<div style="border:1px solid #E8EEF7;border-radius:10px;padding:6px 10px;margin-top:6px;">';
+  for (var j=0;j<arr.length;j++){
+    var o = arr[j];
+    h += '<div class="stop" style="border-top:' + (j ? '1px dashed #EFE3D8' : 'none') + ';">'
+      + '<div class="no">' + (o.stop || (j + 1)) + '</div>'
+      + '<div class="ids">' + esc(o.id) + '　' + esc(o.addr || '')
+      + '<br><span style="color:#A89A92;">' + esc(o.km || '') + ' km・' + esc(o.etaText || '')
+      + '・' + esc(o.pay || '') + ' ' + esc(o.payStatus || '') + '</span></div></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+/* 一鍵：抓地址座標 → 算路網矩陣 → 後端排最順序並寫回 */
+function planAll(){
+  var wait = pendingDlv().filter(function(o){ return o.addr; });
+  if (!wait.length){ toast('目前沒有待送的外送單'); return; }
+  if (wait.length > 12) wait = wait.slice(0, 12);
+
+  var ok = [], idx = 0;
+  toast('正在定位 ' + wait.length + ' 筆外送地址…');
+
+  function buildMatrix(){
+    var cs = [SHOP_LL];
+    for (var i2=0;i2<ok.length;i2++){ cs.push([ok[i2].lng, ok[i2].lat]); }
+    var path = cs.map(function(c){ return c[0] + ',' + c[1]; }).join(';');
+    fetch('https://router.project-osrm.org/table/v1/driving/' + path + '?annotations=duration,distance')
+      .then(function(r){ return r.json(); })
+      .then(function(t){
+        if (!t || !t.distances){ toast('路網查詢失敗'); return; }
+        var n = cs.length, km = [], mn = [];
+        for (var i3=0;i3<n;i3++){
+          km.push([]); mn.push([]);
+          for (var j3=0;j3<n;j3++){
+            km[i3].push(Math.round((t.distances[i3][j3]||0)/10)/100);
+            mn[i3].push(Math.round((t.durations[i3][j3]||0)/6)/10);
+          }
+        }
+        fetch(API, {
+          method:'POST',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify({action:'planCalc', token:TOKEN, items:ok,
+                                matrix:{km:km, min:mn}, write:true})
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(res){
+          if (!res || !res.ok){ toast('排序失敗：' + ((res && res.msg) || '未知')); return; }
+          toast('已自動排好 ' + res.count + ' 站・總里程 ' + res.totalKm + ' km・整趟約 ' + res.tripMin + ' 分');
+          load();
+        })
+        .catch(function(e){ toast('排序失敗：' + e); });
+      })
+      .catch(function(e){ toast('路網查詢失敗：' + e); });
+  }
+
+  function step(){
+    if (idx >= wait.length){
+      if (ok.length < 2){ toast('可定位的地址不足 2 筆，無法排序'); return; }
+      buildMatrix();
+      return;
+    }
+    var o = wait[idx];
+    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=tw&q='
+          + encodeURIComponent(String(o.addr).replace(/\s+/g, '')))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.length){
+          ok.push({id:o.id, addr:o.addr, name:o.name, total:Number(o.total)||0,
+                   lng:+d[0].lon, lat:+d[0].lat});
+        }
+        idx++; setTimeout(step, 1100);
+      })
+      .catch(function(){ idx++; setTimeout(step, 300); });
+  }
+
+  step();
+}
+
 /* 向後端要真實路網矩陣與最佳順序 */
 function refreshRoute(){
   if (!API) return;
@@ -877,6 +966,11 @@ function renderSched(){
     + modeBtn('far','遠→近<br>先跑最遠')
     + modeBtn('manual','我自己排<br>▲▼')
     + '</div>';
+
+  /* 後端逐單自動排序（10 點以上也支援） */
+  h += '<div class="go" style="margin-top:10px;">'
+    + '<button class="main" onclick="planAll()">自動重排全部外送單</button></div>';
+  h += renderAutoSeq(wait);
 
   var prev = '店';
   for (var k=0;k<zs.length;k++){
