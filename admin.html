@@ -505,6 +505,7 @@ function load(){
     cache = data.orders || [];
     render();
     updateStats();
+    refreshRoute();
   });
 }
 
@@ -585,11 +586,12 @@ function render(){
    ② 遠→近（先跑最遠，回程順路撿近的）
    ③ 我自己排（手動 ▲▼）
    ============================================================ */
-var SCHED_MODE_NAME = { near:'近→遠', far:'遠→近', manual:'我自己排' };
-var schedMode = 'near';
+var SCHED_MODE_NAME = { best:'最順（自動最佳）', near:'近→遠', far:'遠→近', manual:'我自己排' };
+var schedMode = 'best';
 var manualSeq = [];
 try {
-  schedMode = localStorage.getItem('mzc_sched_mode') || 'near';
+  schedMode = localStorage.getItem('mzc_sched_mode') || 'best';
+  if (!SCHED_MODE_NAME[schedMode]) schedMode = 'best';
   manualSeq = JSON.parse(localStorage.getItem('mzc_sched_seq') || '[]') || [];
 } catch(e){ schedMode = 'near'; manualSeq = []; }
 
@@ -617,6 +619,145 @@ function pendingDlv(){
   return arr;
 }
 
+/* ============================================================
+   真實路網：後端用 Google/OSRM 算「怎麼跑最順」
+   前端只負責顯示；抓不到後端資料時用內建實測值
+   ============================================================ */
+var SHOP_LL = [120.2422551, 23.0444262];       /* 店：台南永康鹽行新興街272號 */
+var ZONE_LL = {
+  '鹽行':   [120.2382622, 23.0424307],
+  '大橋':   [120.2243309, 23.0193991],
+  '六甲頂': [120.2162887, 23.0210619]
+};
+var STOP_MIN = 4;                               /* 每站停車下樓時間 */
+
+var RT = {
+  source: 'builtin',
+  order: [],
+  matrix: {
+    '店|鹽行': [0.61,1.6],   '店|大橋': [4.40,6.1],   '店|六甲頂': [3.97,5.1],
+    '鹽行|店': [0.61,1.6],   '鹽行|大橋': [3.74,5.1], '鹽行|六甲頂': [3.31,4.1],
+    '大橋|店': [4.39,6.3],   '大橋|鹽行': [3.75,5.3], '大橋|六甲頂': [1.19,2.1],
+    '六甲頂|店': [3.97,5.2], '六甲頂|鹽行': [3.33,4.2],'六甲頂|大橋': [1.15,1.8]
+  }
+};
+
+function rtGet(a, b){
+  var v = RT.matrix[a + '|' + b];
+  return v ? { km: v[0], min: v[1] } : null;
+}
+
+/* 依指定順序算出每段里程／時間與整趟時間 */
+function rtCalcOrder(zs){
+  var legs = [], km = 0, min = 0, prev = '店';
+  for (var i = 0; i < zs.length; i++){
+    var l = rtGet(prev, zs[i]) || { km: 0, min: 0 };
+    legs.push({ from: prev, to: zs[i], km: l.km, min: l.min });
+    km += l.km; min += l.min; prev = zs[i];
+  }
+  var b = rtGet(prev, '店') || { km: 0, min: 0 };
+  legs.push({ from: prev, to: '店', km: b.km, min: b.min });
+  km += b.km; min += b.min;
+  return {
+    legs: legs,
+    totalKm: Math.round(km * 100) / 100,
+    travelMin: Math.round(min),
+    stopMin: zs.length * STOP_MIN,
+    tripMin: Math.round(min) + zs.length * STOP_MIN
+  };
+}
+
+/* 最順順序：後端已算好就直接用，否則前端窮舉 */
+function rtBest(zs){
+  var key = zs.slice().sort().join(',');
+  var mine = RT.order.filter(function(z){ return zs.indexOf(z) >= 0; }).join(',');
+  if (mine === key && RT.order.length) {
+    return RT.order.filter(function(z){ return zs.indexOf(z) >= 0; });
+  }
+  var best = null, bt = Infinity;
+  (function perm(rest, acc){
+    if (!rest.length){
+      var t = rtCalcOrder(acc).travelMin;
+      if (t < bt){ bt = t; best = acc.slice(); }
+      return;
+    }
+    for (var i = 0; i < rest.length; i++){
+      var r = rest.slice(), x = r.splice(i, 1)[0];
+      perm(r, acc.concat([x]));
+    }
+  })(zs, []);
+  return best || zs;
+}
+
+/* 這趟要收多少（餐費／外送費／總收／零錢建議） */
+function feeOf(o){
+  var items = o.items || [], f = 0;
+  for (var i = 0; i < items.length; i++){
+    var nm = String(items[i].name || '');
+    if (nm.indexOf('外送費') >= 0 || nm.indexOf('運費') >= 0) f += Number(items[i].price) || 0;
+  }
+  if (!f && o.fee !== undefined && o.fee !== null) f = Number(o.fee) || 0;
+  return f;
+}
+
+function tripMoney(arr){
+  var food = 0, fee = 0, total = 0;
+  for (var i = 0; i < arr.length; i++){
+    var t = Number(arr[i].total) || 0, f = feeOf(arr[i]);
+    if (f > t) f = t;
+    total += t; fee += f; food += t - f;
+  }
+  var c500 = Math.max(0, 500 - total), c1000 = Math.max(0, 1000 - total);
+  var chg = total ? ('給 500 找 ' + c500 + '／給 1000 找 ' + c1000) : '—';
+  return { food: food, fee: fee, total: total, change: chg };
+}
+
+function timeAfter(m){
+  var d = new Date(Date.now() + m * 60000);
+  return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+
+/* Google Map 導航網址：店 → 各站（依序） */
+function gmapUrl(zs){
+  var pts = [];
+  for (var i = 0; i < zs.length; i++){
+    if (ZONE_LL[zs[i]]) pts.push(ZONE_LL[zs[i]][1] + ',' + ZONE_LL[zs[i]][0]);
+  }
+  if (!pts.length) return '';
+  var origin = SHOP_LL[1] + ',' + SHOP_LL[0];
+  var dest = pts[pts.length - 1];
+  var mid = pts.slice(0, pts.length - 1);
+  var u = 'https://www.google.com/maps/dir/?api=1&travelmode=driving'
+        + '&origin=' + origin + '&destination=' + dest;
+  if (mid.length) u += '&waypoints=' + mid.join('%7C');
+  return u;
+}
+
+function openGmap(){
+  var wait = pendingDlv();
+  if (!wait.length){ toast('目前沒有待送的外送單'); return; }
+  var url = gmapUrl(orderZones(groupByZone(wait)));
+  if (!url){ toast('這些區域还没有座標，先在後端補上'); return; }
+  window.open(url, '_blank');
+}
+
+/* 向後端要真實路網矩陣與最佳順序 */
+function refreshRoute(){
+  if (!API) return;
+  var zs = Object.keys(groupByZone(pendingDlv()));
+  var use = [];
+  for (var i = 0; i < zs.length; i++){ if (ZONE_LL[zs[i]]) use.push(zs[i]); }
+  if (!use.length) return;
+  var url = API + '?action=route&token=' + encodeURIComponent(TOKEN) + '&zones=' + encodeURIComponent(use.join(','));
+  jsonp(url, function(err, data){
+    if (err || !data || data.ok !== true) return;
+    if (data.matrix) RT.matrix = data.matrix;
+    RT.order = data.order || [];
+    RT.source = data.source || 'osrm';
+    render();
+  });
+}
+
 function kmOf(o){ var k = Number(o.km); return isNaN(k) ? 0 : k; }
 
 function groupByZone(arr){
@@ -639,6 +780,7 @@ function zoneKm(groups, z){
 /* 依目前模式排出站序 */
 function orderZones(groups){
   var zs = Object.keys(groups);
+  if (schedMode === 'best') return rtBest(zs);
   if (schedMode === 'manual'){
     zs.sort(function(a,b){
       var ia = manualSeq.indexOf(a), ib = manualSeq.indexOf(b);
@@ -657,15 +799,13 @@ function orderZones(groups){
   return zs;
 }
 
-/* 這趟的里程與時間估算 */
+/* 這趟的里程與時間估算（真實路網） */
 function tripStat(groups, zs){
-  var maxKm = 0;
-  for (var i=0;i<zs.length;i++){ var k = zoneKm(groups, zs[i]); if (k > maxKm) maxKm = k; }
-  var back = maxKm * 2;                       /* 去 + 回 */
-  var drive = Math.round(back * 4);           /* 台南市區約 4 分/km */
-  var stopMin = zs.length * 3;                /* 每站停車 3 分 */
-  return { maxKm: maxKm, back: back, drive: drive, stops: zs.length,
-           total: drive + stopMin + (zs.length ? 6 : 0) };
+  var t = rtCalcOrder(zs);
+  return {
+    totalKm: t.totalKm, maxKm: t.totalKm, back: t.totalKm,
+    drive: t.travelMin, stopMin: t.stopMin, total: t.tripMin, legs: t.legs
+  };
 }
 
 function setSchedMode(m){
@@ -676,6 +816,7 @@ function setSchedMode(m){
   }
   saveSched();
   render();
+  if (m === 'best') refreshRoute();
 }
 
 /* 手動上／下移一站 */
@@ -700,6 +841,9 @@ function renderSched(){
   for (var i=0;i<all.length;i++){ (all[i].status === 'shipped' ? shipped : wait).push(all[i]); }
 
   var sum = function(arr){ var t=0; for(var i=0;i<arr.length;i++){ t += Number(arr[i].total)||0; } return t; };
+  var srcTxt = (RT.source === 'osrm'  ? '後端路網實算（OSRM／Google 同一套道路）'
+             : RT.source === 'google' ? 'Google 官方路線'
+             : '內建實測值');
 
   var h = '<div class="sched">';
   h += '<div class="hd"><b>外送排程</b><span class="tag">一台車・照最順的跑</span><div class="sp2"></div>'
@@ -713,7 +857,7 @@ function renderSched(){
     var who = [];
     for (var i=0;i<shipped.length;i++){ who.push((shipped[i].zone || '外送') + ' ' + shipped[i].id); }
     h += '<div class="car busy">🛵 <b>車已出車</b>：' + esc(who.join('、'))
-      + '<br>合計 ' + money(sum(shipped)) + '・這趟約 ' + sStat.total + ' 分鐘回來'
+      + '<br>車上 ' + money(sum(shipped)) + '・照這樣跑完約 ' + sStat.total + ' 分回來（約 ' + timeAfter(sStat.total) + '）'
       + '<br>車還沒回來前，先不要接新的外送單</div>';
   } else {
     h += '<div class="car free">🛵 車在店裡，可以出車</div>';
@@ -724,53 +868,76 @@ function renderSched(){
   var groups = groupByZone(wait);
   var zs = orderZones(groups);
   var stat = tripStat(groups, zs);
+  var mm = tripMoney(wait);
 
-  /* 排序方式：不照訂單順序，照最順 */
-  h += '<div class="modes">'
-    + '<button class="' + (schedMode === 'near' ? 'on' : '') + '" onclick="setSchedMode(\'near\')">近→遠<br>最省時</button>'
-    + '<button class="' + (schedMode === 'far' ? 'on' : '') + '" onclick="setSchedMode(\'far\')">遠→近<br>先跑最遠</button>'
-    + '<button class="' + (schedMode === 'manual' ? 'on' : '') + '" onclick="setSchedMode(\'manual\')">我自己排<br>▲▼</button>'
+  /* 排序方式 */
+  h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 2px;">'
+    + modeBtn('best','最順<br>自動最佳')
+    + modeBtn('near','近→遠<br>最省時')
+    + modeBtn('far','遠→近<br>先跑最遠')
+    + modeBtn('manual','我自己排<br>▲▼')
     + '</div>';
 
+  var prev = '店';
   for (var k=0;k<zs.length;k++){
     var g = groups[zs[k]];
-    var km = zoneKm(groups, zs[k]);
+    var leg = rtGet(prev, zs[k]);
     var ids = [];
     for (var i=0;i<g.length;i++){ ids.push(g[i].id + '（' + money(Number(g[i].total)||0) + '）'); }
-    var mins2 = km ? Math.round(km * 4) : 0;
-    var eta = g[0].etaText ? '・' + g[0].etaText : '';
+    var sub = leg ? ('從' + (prev === '店' ? '店' : prev) + '過來 ' + leg.km + 'km・開車 ' + Math.round(leg.min) + ' 分') : '缺距離資料';
     h += '<div class="stop">'
       + '<div class="no">' + (k + 1) + '</div>'
       + '<div class="zn">' + esc(zs[k]) + '</div>'
       + '<div class="ids">' + esc(ids.join('、')) + '<br><span style="color:#A89A92;font-weight:700;">'
-      + (km ? '距離 ' + km + 'km・車程約 ' + mins2 + ' 分' : '距離未填')
-      + (g.length > 1 ? '・同區 ' + g.length + ' 單一起送' : '') + esc(eta) + '</span></div>'
+      + sub + (g.length > 1 ? '・同區 ' + g.length + ' 單一起送' : '') + '</span></div>'
       + '<div class="mvw">'
       + '<button onclick="moveStop(\'' + esc(zs[k]) + '\',-1)"' + (k === 0 ? ' disabled' : '') + '>▲</button>'
       + '<button onclick="moveStop(\'' + esc(zs[k]) + '\',1)"' + (k === zs.length - 1 ? ' disabled' : '') + '>▼</button>'
       + '</div>'
       + '<div class="mm">第' + (k + 1) + '站</div>'
       + '</div>';
+    prev = zs[k];
   }
 
-  /* 建議跑法 */
+  /* 回程 */
+  var bl = rtGet(prev, '店');
+  if (bl){
+    h += '<div class="tip" style="margin:8px 0 0;background:#FFF7F1;">'
+      + '回程 ' + esc(prev) + ' → 店：' + bl.km + 'km・約 ' + Math.round(bl.min) + ' 分'
+      + '・跑完約 <b>' + timeAfter(stat.total) + '</b> 回到店裡</div>';
+  }
+
+  /* 這趟要收多少 */
+  h += '<div class="tip" style="margin:10px 0 0;background:#F1FAF3;border-color:#BFE3CA;">'
+    + '<b>這趟要收多少</b><br>'
+    + '餐費 ' + money(mm.food) + ' ＋ 外送費 ' + money(mm.fee)
+    + ' ＝ <b style="font-size:17px;">' + money(mm.total) + '</b><br>'
+    + '<span style="font-weight:700;color:#6E6259;">零錢準備：' + mm.change + '</span></div>';
+
+  /* 跑法 */
   var route = [];
   for (var k=0;k<zs.length;k++){ route.push('第' + (k + 1) + '站 ' + zs[k]); }
-  h += '<div class="tip" style="margin:10px 0 0;">照這個跑：' + esc(route.join(' → '))
-    + '　合計 ' + money(sum(wait)) + '</div>';
-
-  h += '<div class="stat">跑法：<b>' + SCHED_MODE_NAME[schedMode] + '</b>'
-    + '・最遠 <b>' + (stat.maxKm ? stat.maxKm + 'km' : '未填') + '</b>'
-    + (stat.maxKm ? '・去回 ' + stat.back + 'km・車程＋停車約 <b>' + stat.total + ' 分</b>' : '')
-    + '<br><span style="font-weight:700;color:#A89A92;">想改順序就按 ▲▼，排一次之後會記住</span></div>';
+  h += '<div class="stat">照這個跑：<b>' + esc(route.join(' → ')) + ' → 回店</b>'
+    + '<br>總里程 <b>' + stat.totalKm + 'km</b>・開車 <b>' + stat.drive + ' 分</b>＋停車 ' + stat.stopMin + ' 分'
+    + '＝整趟約 <b>' + stat.total + ' 分</b>'
+    + '<br><span style="font-weight:700;color:#A89A92;">路線來源：' + srcTxt + '・要手動調就按 ▲▼</span></div>';
 
   h += '<div class="go">'
     + '<button onclick="copyRoute()">複製出車順序</button>'
+    + '<button onclick="openGmap()">Google Map 導航</button>'
     + '<button class="main" onclick="shipAll()">整趟出車</button>'
     + '</div>';
 
   h += '</div>';
   return h;
+}
+
+function modeBtn(m, label){
+  var on = (schedMode === m);
+  return '<button style="flex:1 1 44%;padding:9px 4px;font-size:11.5px;line-height:1.4;border-radius:12px;'
+    + 'border:1.5px solid ' + (on ? '#E8734A' : '#EADFD7') + ';'
+    + 'background:' + (on ? '#E8734A' : '#fff') + ';color:' + (on ? '#fff' : '#6E6259') + ';'
+    + 'font-weight:900;cursor:pointer;" onclick="setSchedMode(\'' + m + '\')">' + label + '</button>';
 }
 
 /* 建議路線文字 */
@@ -780,6 +947,7 @@ function routeText(){
   var groups = groupByZone(wait);
   var zs = orderZones(groups);
   var stat = tripStat(groups, zs);
+  var mm = tripMoney(wait);
   var L = [];
   L.push('【今天外送・照最順跑】一台車，' + SCHED_MODE_NAME[schedMode] + '：');
   for (var k=0;k<zs.length;k++){
@@ -788,7 +956,9 @@ function routeText(){
     L.push((k+1) + '. ' + zs[k] + '　' + ids.join('、') + '　' + money(t)
       + (g[0].addr ? '　' + g[0].addr : ''));
   }
-  if (stat.maxKm) L.push('（最遠 ' + stat.maxKm + 'km・去回約 ' + stat.back + 'km・整趟約 ' + stat.total + ' 分）');
+  L.push('（總里程 ' + stat.totalKm + 'km・開車 ' + stat.drive + ' 分・整趟約 ' + stat.total
+    + ' 分・約 ' + timeAfter(stat.total) + ' 回店）');
+  L.push('這趟要收：' + money(mm.total) + '（餐費 ' + money(mm.food) + '＋外送費 ' + money(mm.fee) + '）');
   return L.join('\n');
 }
 
@@ -809,6 +979,18 @@ function shipAll(){
   var first = null;
   for (var i=0;i<cache.length;i++){ if (cache[i].id === ids[0]) first = cache[i]; }
   if (first) openNotify(first.id);
+}
+
+/* 對帳：把訂單的付款狀態改成已收款 */
+function markPaid(id, amt){
+  if (!confirm('確認已收到 ' + money(amt) + '？\n（現金或轉帳入帳後再按）')) return;
+  var url = API + '?action=paid&token=' + encodeURIComponent(TOKEN)
+          + '&id=' + encodeURIComponent(id) + '&ps=' + encodeURIComponent('已收款');
+  jsonp(url, function(err, data){
+    if (err || !data || data.ok !== true){ toast((data && data.msg) ? data.msg : '更新失敗'); return; }
+    toast('已標記為已收款');
+    load();
+  });
 }
 
 function statusBadge(s){
@@ -893,6 +1075,11 @@ function orderHTML(o){
     + (o.payStatus ? ' <span class="' + (o.payStatus.indexOf('待') >= 0 ? 'pay-wait' : '') + '">· ' + esc(o.payStatus) + '</span>' : '')
     + '</div>'
     + '<div class="vv">' + money(Number(o.total) || 0) + '</div></div>';
+
+  /* 待對帳／待付款 → 一鍵標已收款 */
+  if (o.payStatus && o.payStatus.indexOf('待') >= 0 && st !== 'cancel'){
+    h += '<button class="act ok" onclick="markPaid(\'' + esc(o.id) + '\',' + (Number(o.total) || 0) + ')">收到錢了</button>';
+  }
 
   if (st === 'new'){
     h += '<button class="act go" onclick="setStatus(\'' + esc(o.id) + '\',\'making\')">接單</button>'
