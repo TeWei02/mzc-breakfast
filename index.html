@@ -976,7 +976,9 @@
             <small>金額＝餐點＋外送費（未滿 NT$300 加 NT$30），電話裡會直接跟你說總共多少</small></div></div>
           <div class="step"><div class="sn">3</div><div class="st">順路出車：鹽行 → 大橋 → 六甲頂
             <small>同一個時段的多張單會一起載，近的先送、不繞路，所以比你一個人單跑更快</small></div></div>
-          <div class="step"><div class="sn">4</div><div class="st">到場前先打電話，當面交餐付款
+          <div class="step"><div class="sn">4</div><div class="st">出車時通知你「已出車」＋大約幾點到
+            <small>我們只有一台車，一趟送完才回來載下一趟；若是尖峰或前面還有單，會先跟你說可能晚 5～10 分鐘</small></div></div>
+          <div class="step"><div class="sn">5</div><div class="st">到場前先打電話，當面交餐付款
             <small>可付現，或線上付款（像麥當勞、KFC 那樣結帳時直接線上付）</small></div></div>
         </div>
 
@@ -990,6 +992,7 @@
         </table>
 
         <div class="dlv-tip">送到府要收多少，結帳頁會自己算好（餐點＋外送費），不用自己加。<br>
+        全店只有一台外送車，順路一趟一趟送；出車後店家會通知你，若前面還有單可能延遲 5～10 分鐘，請見諒。<br>
         超出鹽行、大橋、六甲頂，或同一趟要送去兩個地址，請先電話問一下，我們另行報價。</div>
       </div>
       <div class="map-wrap">
@@ -1137,28 +1140,45 @@
         <div class="tx"><b>現金 / 取餐付款</b><span>送達或取餐時付款</span></div>
         <div class="rd"></div>
       </button>
+      <button class="pay" data-pay="轉帳（中國信託）" onclick="pickPay(this)">
+        <div class="ico">🏦</div>
+        <div class="tx"><b>轉帳 / 匯款</b><span>中國信託 822・送出後看帳號</span></div>
+        <div class="rd"></div>
+      </button>
       <button class="pay" data-pay="LINE Pay" onclick="pickPay(this)">
         <div class="ico">💚</div>
-        <div class="tx"><b>LINE Pay</b><span>線上付款（金流開通後啟用）</span></div>
+        <div class="tx"><b>LINE Pay</b><span>金流開通後啟用（目前請選轉帳或現金）</span></div>
         <div class="rd"></div>
       </button>
       <button class="pay" data-pay="信用卡／簽帳金融卡" onclick="pickPay(this)">
         <div class="ico">💳</div>
-        <div class="tx"><b>信用卡 / 簽帳金融卡</b><span>Visa・Master・JCB</span></div>
+        <div class="tx"><b>信用卡 / 簽帳金融卡</b><span>金流開通後啟用</span></div>
         <div class="rd"></div>
       </button>
       <button class="pay" data-pay="Apple Pay" onclick="pickPay(this)">
         <div class="ico">⌘</div>
-        <div class="tx"><b>Apple Pay</b><span>iPhone / Mac 感應付款</span></div>
+        <div class="tx"><b>Apple Pay</b><span>金流開通後啟用</span></div>
         <div class="rd"></div>
       </button>
     </div>
 
     <div class="pay-note" id="payNote"></div>
 
+    <div class="pay-note" id="payBank">
+      <b>轉帳資訊（送出後照這個匯）</b><br>
+      銀行：<b id="bankName">中國信託（822）</b><br>
+      帳號：<b id="bankAcct" style="letter-spacing:.5px;">245540350473</b>
+      <button onclick="copyAcct()" style="margin-left:6px;padding:4px 10px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-weight:900;font-size:12px;cursor:pointer;">複製</button><br>
+      金額：<b id="bankAmt">NT$0</b>（請依這個金額轉，勿自行加減）<br>
+      <input id="fLast5" maxlength="5" inputmode="numeric" placeholder="你的帳號末五碼（對帳用）"
+        style="margin-top:8px;width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-weight:700;background:#fff;box-sizing:border-box;">
+      <span style="font-size:11px;color:var(--ink-3);font-weight:700;">轉好再送出，店家對到帳就開始做。</span>
+    </div>
+
     <div class="notice">
-      <b>付款說明</b>：① 送達／取餐時付現　② 結帳時直接線上付款（LINE Pay、信用卡、Apple Pay）。<br>
-      本店<b>沒有先匯款、先轉帳</b>的流程，也不會私訊要你匯款。線上金流審核通過前，線上付款會標示「未開通」，請改選現金，或電話 06-2434314 預訂。
+      <b>付款說明</b>：① 送達／取餐時付現　② 線上轉帳到本店中國信託帳戶（送出後會顯示帳號與金額）　
+      ③ 信用卡／LINE Pay／Apple Pay 待金流開通後啟用。<br>
+      轉帳只轉到頁面上這一個帳戶，店家<b>不會私訊或電話要你改匯別的帳號</b>；金額有疑問先打 06-2434314。
     </div>
 
     <div class="sum">
@@ -1203,7 +1223,12 @@ var CONFIG = {
 
   /* 線上付款（LINE Pay / 信用卡 / Apple Pay）金流開通後設為 true，
      未開通時客人選線上付款，訂單會標記「待付款」，由店家提供付款連結 */
-  payOnline: false
+  payOnline: false,
+
+  /* 收款帳戶（線上轉帳用；金流開通後可改走綠界刷卡） */
+  bank: { code: '822', name: '中國信託', acct: '245540350473' },
+  /* 是否需要「先轉帳才算成立」 */
+  payTransfer: true
 };
 
 /* ==========================================================
@@ -1739,6 +1764,7 @@ function initMap(){
 }
 
 function pickPay(el){
+  setTimeout(updateBankBox, 0);
   var bs = document.getElementById('payList').children;
   for (var i=0;i<bs.length;i++) bs[i].classList.remove('on');
   el.classList.add('on');
@@ -1746,24 +1772,61 @@ function pickPay(el){
   updatePayNote();
 }
 
-/* 付款狀態：現金/取餐付款 = 現場付；線上付款 = 待付款 */
+/* 付款狀態：現金/取餐付款 = 現場付；轉帳 = 待對帳；其他線上 = 待付款 */
 function isOnlinePay(){
   return curPay.indexOf('現金') === -1 && curPay.indexOf('取餐') === -1;
 }
+function isTransferPay(){
+  return curPay.indexOf('轉帳') >= 0 || curPay.indexOf('匯款') >= 0;
+}
 function payStatus(){
-  return isOnlinePay() ? '待付款' : '現場付款';
+  if (!isOnlinePay()) return '現場付款';
+  return isTransferPay() ? '待對帳' : '待付款';
+}
+function last5(){
+  var el = document.getElementById('fLast5');
+  return el ? el.value.replace(/\D/g, '').slice(0, 5) : '';
 }
 function updatePayNote(){
   var el = document.getElementById('payNote');
+  var bank = document.getElementById('payBank');
   if (!el) return;
+
+  if (bank){
+    if (isTransferPay()){ bank.classList.add('on'); updateBankBox(); }
+    else { bank.classList.remove('on'); }
+  }
+
   if (!isOnlinePay()){ el.classList.remove('on'); el.innerHTML = ''; return; }
   el.classList.add('on');
-  if (CONFIG.payOnline){
-    el.innerHTML = '<b>' + curPay + '</b>：送出後直接跳轉付款頁完成付款（同麥當勞、KFC 線上點餐），付款成功才算接單。';
-  } else {
-    el.innerHTML = '<b>' + curPay + '</b>：這項線上付款還沒開通，請改選「現金／取餐付款」，'
-                 + '或先電話 06-2434314 預訂。本店不會要求你先匯款。';
+
+  if (isTransferPay()){
+    el.innerHTML = '<b>轉帳付款</b>：填好下面帳號末五碼，送出後照上面的帳號轉帳，'
+                 + '店家對到帳就開始做。金額一律用頁面算好的 <b>NT$' + grandTotal() + '</b>。';
+    return;
   }
+  if (CONFIG.payOnline){
+    el.innerHTML = '<b>' + curPay + '</b>：送出後直接跳轉付款頁完成付款，付款成功才算接單。';
+  } else {
+    el.innerHTML = '<b>' + curPay + '</b>：這項線上付款還沒開通，請改選「轉帳」或「現金／取餐付款」，'
+                 + '或先電話 06-2434314 預訂。';
+  }
+}
+
+function updateBankBox(){
+  var n = document.getElementById('bankName');
+  var a = document.getElementById('bankAcct');
+  var m = document.getElementById('bankAmt');
+  if (n && CONFIG.bank) n.textContent = CONFIG.bank.name + '（' + CONFIG.bank.code + '）';
+  if (a && CONFIG.bank) a.textContent = CONFIG.bank.acct;
+  if (m) m.textContent = 'NT$' + grandTotal();
+}
+
+function copyAcct(){
+  var t = CONFIG.bank.acct;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){ toast('帳號已複製'); }).catch(function(){ fallbackCopy(t); });
+  } else { fallbackCopy(t); }
 }
 
 function openCheckout(){
@@ -1836,6 +1899,12 @@ function submitOrder(){
     if (!zoneObj()){ toast('請先選外送區域，才會知道多久送到'); return; }
   }
 
+  if (isTransferPay() && last5().length !== 5){
+    toast('請填轉帳帳號末五碼，店家才對得到帳');
+    document.getElementById('fLast5').focus();
+    return;
+  }
+
   var id  = orderId();
   var txt = buildOrderText(id);
 
@@ -1855,7 +1924,8 @@ function submitOrder(){
     etaAt: (curWay === '外送')
              ? (zoneObj() ? etaClock(zoneObj().eta) : '')
              : etaClock(DELIVERY.pickupReady),
-    note: document.getElementById('fNote').value.trim(),
+    note: document.getElementById('fNote').value.trim()
+            + (isTransferPay() ? (document.getElementById('fNote').value.trim() ? '　' : '') + '轉帳末五碼：' + last5() : ''),
     total: total(),
     items: []
   };
@@ -1864,6 +1934,12 @@ function submitOrder(){
   }
   payload.total = grandTotal();
   payload.fee = dlvFee();
+  payload.payStatus = payStatus();
+  if (isTransferPay()){
+    txt += '\n\n【轉帳資訊】' + CONFIG.bank.name + ' ' + CONFIG.bank.code + '-' + CONFIG.bank.acct
+        + '\n金額 NT$' + grandTotal() + '　帳號末五碼 ' + last5()
+        + '\n（轉好才算付款完成，店家對到帳就開始做）';
+  }
   if (dlvFee() > 0){ payload.items.push({name:'外送費', qty:1, price: dlvFee()}); }
 
   var btn = document.getElementById('submitBtn');
