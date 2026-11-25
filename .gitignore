@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# 編輯器
+.vscode/
+.idea/
+*.swp
+
+# 依賴
+node_modules/
+
+# 憑證與金鑰（絕不可上傳）
+.env
+.env.*
+*.pem
+*.key
+keys*.json
+secret*.json
+*credential*
+.clasp.json
+.clasprc.json
+
+# 日誌
+*.log
