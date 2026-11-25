@@ -1,5 +1,7 @@
 # 美之晨 · 線上點餐系統
 
+[![繁體中文](https://img.shields.io/badge/README-繁體中文-2f81f7?style=flat-square)](README.md) [![English](https://img.shields.io/badge/README-English-6e7781?style=flat-square)](README.en.md)
+
 台南永康「美之晨」早餐店的自建點餐平台。客人線上點單 → 店家後台接單 → 依實際路網自動排出最順的外送順序 → 線上付款（綠界 ECPay）自動入帳。不抽成、不靠外送平台。
 
 ## 線上網址
@@ -45,6 +47,8 @@
 | `sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
 | `route.png` | 外送範圍示意圖（目前頁面未引用，保留備用） |
 | `上線操作說明.md` | 部署與金流操作紀錄 |
+| `README.md` / `README.en.md` | 中文／英文說明，頁首可互切 |
+| `.github/workflows/ci.yml` | CI：靜態檔齊備檢查、失效連結檢查、密鑰外洩掃描（含手動觸發的 Pages 部署） |
 
 ## 後端 API
 
@@ -83,6 +87,17 @@ clasp deploy        # 建新版本
 ```
 
 > 若前端已寫死 `/exec` 網址，改版後要用 `clasp deploy --deploymentId <舊ID>` 更新同一部署，否則前端需跟著換網址。
+
+### CI（GitHub Actions）
+
+`.github/workflows/ci.yml` 於每次 push／PR 自動執行：
+
+- 檢查必要靜態檔（`index.html`、`admin.html`、`sauce.html`、`README.md`、`README.en.md`、`LICENSE`）是否齊備
+- 解析所有本地 `href` / `src`，連結指向不存在的檔案即失敗
+- 檢查 HTML 可解析性，標籤未閉合時列出警告
+- 掃描是否誤提交密鑰（綠界 HashKey／HashIV、Apps Script 部署網址、管理密碼）
+
+另附 `deploy` job（僅手動 `workflow_dispatch` 觸發），用官方 GitHub Pages actions 發布；需先在 **Settings → Pages → Source** 設為 **GitHub Actions**。
 
 ## 金流上線（綠界）
 
