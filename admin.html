@@ -214,6 +214,8 @@
           box-shadow:0 3px 10px rgba(232,115,74,.28);}
   .act.ok{background:var(--ok-bg);color:var(--ok);}
   .act.no{background:#F1EBE6;color:#8E8079;}
+ .act.del{background:#FBEAE6;color:#B4472C;}
+ .act:disabled{opacity:.45;}
 
   .empty{
     text-align:center;padding:56px 20px;color:var(--ink-3);font-size:13.5px;line-height:2;
@@ -362,7 +364,7 @@
 /* ============================================================
    狀態
    ============================================================ */
-var API   = localStorage.getItem('mzc_api')   || 'https://script.google.com/macros/s/AKfycbzwtLb5OsmPR4yOjsXRu_gv5H3qLb2MLBVzACU9u2S8RZYbkJNmpSJxnJzA-_xYCf5E/exec';
+var API   = localStorage.getItem('mzc_api')   || 'https://script.google.com/macros/s/AKfycbzNoO78Dr2jlIfQGBoAJCVmTAmvwpSPT7m9jGP_4HSPV78so2H6tk7H9NIiEuYG35dA/exec';
 var TOKEN = localStorage.getItem('mzc_token') || '';
 var filterMode = 'today';
 var cache = [];
@@ -584,6 +586,7 @@ function showSetup(){
     + '<div class="fld"><label>管理密碼</label>'
     + '<input id="inToken" type="password" placeholder="在 Code.gs 裡設定的密碼" value="' + esc(TOKEN) + '"></div>'
     + '<button class="btn-main" onclick="saveSetup()">儲存並載入訂單</button>'
+    + (TOKEN ? '<button class="btn-main" style="background:#F1EBE6;color:#8E8079;margin-top:8px;" onclick="changeToken()">修改管理密碼</button>' : '')
     + '<div class="hint">'
     + '① 網址一定要是「/exec」結尾，不是 /dev。<br>'
     + '② 部署時「誰可以存取」要選「任何人」。<br>'
@@ -1337,8 +1340,83 @@ function orderHTML(o){
     h += '<button class="act" onclick="setStatus(\'' + esc(o.id) + '\',\'new\')">改回新單</button>';
   }
 
+  /* 刪除：真的刪掉試算表那一列，會先跳確認 */
+  h += '<button class="act del" onclick="delOrder(this,\'' + esc(o.id) + '\')">刪除</button>';
+
   h += '</div></div>';
   return h;
+}
+
+/* ============================================================
+   永久刪除一筆訂單（試算表整列刪除，無法復原）
+   ============================================================ */
+function delOrder(btn, id){
+  if (!API || !TOKEN){ toast('請先完成連線設定'); return; }
+
+  if (!confirm('確定要永久刪除訂單 ' + id + '？\n\n試算表上那一列會被刪掉，無法復原。')) return;
+
+  var old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '刪除中…';
+
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'deleteOrder', token: TOKEN, id: id })
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok){
+        toast('刪除失敗：' + ((d && d.msg) || '未知'));
+        btn.disabled = false; btn.textContent = old;
+        return;
+      }
+      var keep = [];
+      for (var i=0;i<cache.length;i++){ if (cache[i].id !== id) keep.push(cache[i]); }
+      cache = keep;
+      toast('已刪除 ' + id);
+      render();
+      updateStats();
+    })
+    .catch(function(e){
+      toast('刪除失敗：' + e);
+      btn.disabled = false; btn.textContent = old;
+    });
+}
+
+/* ============================================================
+   修改管理密碼（後端寫進指令碼屬性，立即生效）
+   ============================================================ */
+function changeToken(){
+  if (!API || !TOKEN){ toast('請先完成連線設定'); return; }
+
+  var a = prompt('設定新的管理密碼\n（至少 8 碼，且要同時有英文字母和數字）');
+  if (a === null) return;
+  a = (a || '').trim();
+
+  if (a.length < 8){ toast('至少 8 碼'); return; }
+  if (!/[A-Za-z]/.test(a) || !/[0-9]/.test(a)){ toast('要同時有英文和數字'); return; }
+  if (a === TOKEN){ toast('新密碼和現在的一樣'); return; }
+
+  var b = prompt('再輸入一次新密碼確認');
+  if (b === null) return;
+  if (a !== (b || '').trim()){ toast('兩次輸入不一樣'); return; }
+
+  toast('修改中…');
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'setToken', token: TOKEN, newToken: a })
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok){ toast('修改失敗：' + ((d && d.msg) || '未知')); return; }
+      TOKEN = a;
+      try { localStorage.setItem('mzc_token', a); } catch(e){}
+      toast('管理密碼已更新');
+      load();
+    })
+    .catch(function(e){ toast('修改失敗：' + e); });
 }
 
 /* ============================================================
