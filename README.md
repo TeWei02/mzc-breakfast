@@ -6,10 +6,14 @@
 
 ## 線上網址
 
-| 入口 | 網址 |
-|---|---|
-| 客人點餐 | https://tewei02.github.io/mzc-breakfast/ |
-| 店家後台 | https://tewei02.github.io/mzc-breakfast/admin.html |
+| 入口 | 網址 | 備註 |
+|---|---|---|
+| 客人點餐 | https://mzc-breakfast.pages.dev/ | Cloudflare Pages 正式站 |
+| 店家後台 | https://mzc-breakfast.pages.dev/admin | Cloudflare Access 保護：寄一次性驗證碼到店主 Email |
+| 食品標示 | https://mzc-breakfast.pages.dev/sauce | 公開 |
+| 舊站 | https://tewei02.github.io/mzc-breakfast/ | 僅保留轉址頁，會自動導向新站 |
+
+> 舊站原為 GitHub Pages（免費方案不得作商業用途），已遷至 Cloudflare Pages；根目錄三個 HTML 現為轉址頁，舊連結與 QR code 不會失效。後端真實網址不再出現在任何前端檔案，也不寫進版控（見下方環境變數）。
 
 ## 功能
 
@@ -29,26 +33,48 @@
 
 ```
 客人端 index.html ─┐
-                    ├─ POST ─→ Google Apps Script (/exec) ─→ Google 試算表（訂單）
-店家後台 admin.html ┘                    │
-                                         └─→ 綠界 ECPay（建立訂單／付款回呼）
+                    ├─ POST ─→ /api（Pages _worker.js 代理）─→ Google Apps Script (/exec) ─→ Google 試算表（訂單）
+店家後台 admin.html ┘                                                    │
+                                                                         └─→ 綠界 ECPay（建立訂單／付款回呼）
 ```
 
-- 前端：純靜態單檔 HTML，圖片內嵌，可直接託管於 GitHub Pages（https）
+- 前端：純靜態單檔 HTML，圖片內嵌，託管於 Cloudflare Pages（https，允許商業用途）
+- 代理：`public/_worker.js` 把同網域 `/api` 轉到 Apps Script，前端與原始碼都不再出現 `/exec`
+- 後台保護：Cloudflare Access（一次性驗證碼，僅店主 Email）
 - 後端：Google Apps Script，資料存 Google 試算表，免伺服器費用
 - 金流：綠界 ECPay 幕後建單 + 兩組回呼（付款結果 / 取號資訊）
+
 
 ## 目錄結構
 
 | 檔案 | 說明 |
 |---|---|
-| `index.html` | 客人點餐頁（單檔，圖片內嵌） |
-| `admin.html` | 店家後台：訂單列表、出車排序、付款狀態、綠界設定面板 |
-| `sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
+| `public/` | **站台原始檔，即 Cloudflare Pages 的建置輸出目錄**（改這裡才會上線） |
+| `public/index.html` | 客人點餐頁（單檔，圖片內嵌） |
+| `public/admin.html` | 店家後台：訂單列表、出車排序、付款狀態、綠界設定面板 |
+| `public/sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
+| `public/_worker.js` | Pages Advanced Mode 代理層：`/api` 轉發 Apps Script，前端不再暴露 `/exec` |
+| `public/_headers` | 安全標頭：全站 X-Frame-Options／nosniff／Referrer-Policy，後台 noindex＋no-store |
+| `public/images/` | 頁面用圖片 |
+| `index.html`／`admin.html`／`sauce.html`（根目錄） | 舊站轉址頁，導向新站 |
 | `route.png` | 外送範圍示意圖（目前頁面未引用，保留備用） |
 | `上線操作說明.md` | 部署與金流操作紀錄 |
 | `README.md` / `README.en.md` | 中文／英文說明，頁首可互切 |
-| `.github/workflows/ci.yml` | CI：靜態檔齊備檢查、失效連結檢查、密鑰外洩掃描（含手動觸發的 Pages 部署） |
+| `scripts/check_static.py` | 靜態檔齊備、失效連結、標籤閉合、密鑰外洩檢查 |
+| `.github/workflows/ci.yml` | CI：每次 push 跑檢查；舊站 Pages 部署改為手動觸發 |
+
+## 環境變數（Cloudflare Pages）
+
+| 變數 | 用途 | 必要性 |
+|---|---|---|
+| `BACKEND_URL` | Apps Script `/exec` 完整網址，供 `_worker.js` 轉發用 | 必填，未設時 `/api` 回 503 `backend_not_configured` |
+
+設定位置：Cloudflare Dashboard → Workers & Pages → `mzc-breakfast` → Settings → Variables and Secrets → Production。**不要寫回程式碼**，本儲存庫為公開。
+
+## 自動部署
+
+`mzc-breakfast` 已與 GitHub `TeWei02/mzc-breakfast` 的 `main` 分支連動：`git push` 後自動建置上線（建置指令留空、輸出目錄 `public`）。
+
 
 ## 後端 API
 

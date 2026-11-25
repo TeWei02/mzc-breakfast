@@ -25,10 +25,16 @@ from urllib.parse import unquote, urlparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# 站台原始檔放在 public/，該目錄即 Cloudflare Pages 的建置輸出目錄；
+# 根目錄的三個 HTML 只是把舊 GitHub Pages 連結導向新站的轉址頁。
+SITE = os.path.join(ROOT, "public")
+
 REQUIRED_FILES = [
-    "index.html",
-    "admin.html",
-    "sauce.html",
+    "public/index.html",
+    "public/admin.html",
+    "public/sauce.html",
+    "public/_headers",
+    "public/_worker.js",
     "README.md",
     "README.en.md",
     "LICENSE",
@@ -100,7 +106,7 @@ def check_required_files() -> None:
 def check_links() -> None:
     broken = 0
     for html in HTML_FILES:
-        path = os.path.join(ROOT, html)
+        path = os.path.join(SITE, html)
         if not os.path.isfile(path):
             continue
         with open(path, "r", encoding="utf-8", errors="replace") as handle:
@@ -121,7 +127,7 @@ def check_links() -> None:
             target = unquote(parsed.path)
             if not target:
                 continue
-            candidate = os.path.normpath(os.path.join(ROOT, target.lstrip("/")))
+            candidate = os.path.normpath(os.path.join(SITE, target.lstrip("/")))
             if not os.path.exists(candidate):
                 errors.append(
                     f"{html}:{line} 本地連結失效 / broken local link: {ref}"
