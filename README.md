@@ -15,6 +15,8 @@
 
 > 舊站原為 GitHub Pages（免費方案不得作商業用途），已遷至 Cloudflare Pages；根目錄三個 HTML 現為轉址頁，舊連結與 QR code 不會失效。後端真實網址不再出現在任何前端檔案，也不寫進版控（見下方環境變數）。
 
+| 菜單 | `https://mzc-breakfast.pages.dev/menu` |
+
 ## 功能
 
 | 分類 | 內容 |
@@ -27,6 +29,7 @@
 | 金流 | 綠界 ECPay：信用卡、Apple Pay、Google Pay、ATM 虛擬帳號、超商代碼；付款完成自動入帳 |
 | 取號 | ATM／超商取號回呼自動寫入訂單備註與「待付款（已取號）」狀態 |
 | 食品標示 | `sauce.html`：辣椒醬包裝標示、營養標示與試算、瓶身貼紙、宅配包裝說明 |
+| 菜單 | `menu.html`：完整價目表大圖、點擊放大、列印、`Menu` 結構化資料；首頁頁頭設入口 |
 | 訂單管理 | 後台可永久刪除單一訂單（二次確認）、線上修改管理密碼（不必重新部署） |
 | 日期查詢 | 後台篩選列可選「今天／昨天／全部」，也能直接點日期框查任何一天（統計與空狀態跟著該日走） |
 | 登入 | 後台只需輸入管理密碼；API 網址預設同網域 `/api`，一般不用改 |
@@ -61,6 +64,7 @@
 | `public/index.html` | 客人點餐頁（單檔，圖片內嵌） |
 | `public/admin.html` | 店家後台：訂單列表、出車排序、付款狀態、綠界設定面板 |
 | `public/sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
+| `public/menu.html` | 菜單頁：`images/menu.jpg`（2000×737 網頁用）與 `images/menu-full.jpg`（原尺寸 2467×910） |
 | `public/_worker.js` | Pages Advanced Mode 代理層：`/api` 轉發 Apps Script，前端不再暴露 `/exec` |
 | `public/manifest.webmanifest` | PWA 設定：可加到手機主畫面（含 192／512 圖示） |
 | `public/images/icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | App 圖示（橙底白字「晨」） |
@@ -186,6 +190,7 @@ clasp update-deployment <舊 deploymentId> -d "版本說明"   # 建新版本並
 - [x] 舊全權 API Token `mzc-marvis` 作廢（2026-11-27，僅留 `mzc-marvis-20261127`）
 - [ ] 綠界正式商店代號申請與三碼設定（照做步驟見 `輸出/美之晨_申辦清單_綠界與食品登錄_20261127.md`，個人賣家 7 項資料已列齊）
 - [ ] 食品業者登錄字號：至 fadenbook.fda.gov.tw 線上申辦，當日可取得 16 碼字號，填入 `sauce.html` 瓶身貼紙「登錄字號」欄
+- [x] 門牌統一為「臺南市永康區塩興里新行街 272 號」（與 Google 商家檔案、OSM 反查一致），全站 meta／頁尾／標示貼紙／菜單頁已同步
 - [x] 營養標示：v24.2 已內建一鍵試算（配方加權）並自動套用至標示表與貼紙；送驗後以報告數值覆蓋即可
 - [x] 舊版外送路線圖 `route.png`：確認 repo 內已無此檔、頁面亦未引用（僅有同名 CSS class `.route`），項目關閉
 - [ ] LINE 官方帳號（建議先開免費輕用量）
