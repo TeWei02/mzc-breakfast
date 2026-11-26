@@ -217,7 +217,7 @@
             <tr><td>鈉</td><td>— mg</td></tr>
           </table>
         </div>
-        <div class="brow"><span class="bk">登錄字號</span><span class="bv" contenteditable="true">食品業者登錄字號（待填）</span></div>
+        <div class="brow"><span class="bk">登錄字號</span><span class="bv" id="fdaNoLabel" contenteditable="true">食品業者登錄字號（待填）</span></div>
         <div class="bfoot">美之晨早餐店　臺南市永康區塩興里新行街 272 號　06-2434314</div>
       </div>
     </div>
@@ -252,6 +252,15 @@ function saveAll(){
   var arr = [];
   for (var i=0;i<editables.length;i++) arr.push(editables[i].innerHTML);
   try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch(e){}
+  /* 登錄字號同步給 /policy 頁（填了就公開顯示） */
+  try {
+    var fda = document.getElementById('fdaNoLabel');
+    if (fda) {
+      var t = (fda.textContent || '').replace(/[（）\s]/g, '');
+      var ok = /^[A-Z]-\d{9}-\d{5}-\d$/.test(t) || /^[A-Z]\d{15}$/.test(t);
+      if (ok) localStorage.setItem('mzc_fda_no', t); else localStorage.removeItem('mzc_fda_no');
+    }
+  } catch(e){}
 }
 function loadAll(){
   var raw = null;
