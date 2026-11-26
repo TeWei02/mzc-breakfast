@@ -169,19 +169,19 @@
       <div style="margin-top:12px;">
         <p style="font-size:13px;color:#6B5A52;margin:0 0 10px;">
           填入配方重量（公克）與該食材每 100g 的營養值，按「計算」得到整批總量與每 100g 數值。
-          數值請自行至食品營養成分資料庫核對。
+          油脂類的飽和／反式脂肪已在「大豆油」列預填 USDA 參考值（飽和 15.7、反式 0.5 g/100g），其他食材占比極低可留 0；仍請自行核對。
         </p>
         <table id="calcTable" style="font-size:13px;">
           <thead>
-            <tr><th style="width:26%">食材</th><th>重量(g)</th><th>熱量/100g</th><th>蛋白/100g</th><th>脂肪/100g</th><th>碳水/100g</th><th>糖/100g</th><th>鈉(mg/100g)</th></tr>
+            <tr><th style="width:22%">食材</th><th>重量(g)</th><th>熱量/100g</th><th>蛋白/100g</th><th>脂肪/100g</th><th>碳水/100g</th><th>糖/100g</th><th>鈉(mg/100g)</th><th>飽和脂肪/100g</th><th>反式脂肪/100g</th></tr>
           </thead>
           <tbody>
-            <tr><td contenteditable="true">辣椒</td><td contenteditable="true">400</td><td contenteditable="true">35</td><td contenteditable="true">1.9</td><td contenteditable="true">0.4</td><td contenteditable="true">7.1</td><td contenteditable="true">3.5</td><td contenteditable="true">7</td></tr>
-            <tr><td contenteditable="true">大豆油</td><td contenteditable="true">120</td><td contenteditable="true">884</td><td contenteditable="true">0</td><td contenteditable="true">100</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
-            <tr><td contenteditable="true">蒜頭</td><td contenteditable="true">80</td><td contenteditable="true">128</td><td contenteditable="true">7.5</td><td contenteditable="true">0.4</td><td contenteditable="true">27</td><td contenteditable="true">1</td><td contenteditable="true">19</td></tr>
-            <tr><td contenteditable="true">糖</td><td contenteditable="true">60</td><td contenteditable="true">385</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">99</td><td contenteditable="true">99</td><td contenteditable="true">1</td></tr>
-            <tr><td contenteditable="true">食鹽</td><td contenteditable="true">45</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">38758</td></tr>
-            <tr><td contenteditable="true">釀造醋</td><td contenteditable="true">45</td><td contenteditable="true">20</td><td contenteditable="true">0.3</td><td contenteditable="true">0</td><td contenteditable="true">4.5</td><td contenteditable="true">0.5</td><td contenteditable="true">40</td></tr>
+            <tr><td contenteditable="true">辣椒</td><td contenteditable="true">400</td><td contenteditable="true">35</td><td contenteditable="true">1.9</td><td contenteditable="true">0.4</td><td contenteditable="true">7.1</td><td contenteditable="true">3.5</td><td contenteditable="true">7</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
+            <tr><td contenteditable="true">大豆油</td><td contenteditable="true">120</td><td contenteditable="true">884</td><td contenteditable="true">0</td><td contenteditable="true">100</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">15.7</td><td contenteditable="true">0.5</td></tr>
+            <tr><td contenteditable="true">蒜頭</td><td contenteditable="true">80</td><td contenteditable="true">128</td><td contenteditable="true">7.5</td><td contenteditable="true">0.4</td><td contenteditable="true">27</td><td contenteditable="true">1</td><td contenteditable="true">19</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
+            <tr><td contenteditable="true">糖</td><td contenteditable="true">60</td><td contenteditable="true">385</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">99</td><td contenteditable="true">99</td><td contenteditable="true">1</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
+            <tr><td contenteditable="true">食鹽</td><td contenteditable="true">45</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">0</td><td contenteditable="true">38758</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
+            <tr><td contenteditable="true">釀造醋</td><td contenteditable="true">45</td><td contenteditable="true">20</td><td contenteditable="true">0.3</td><td contenteditable="true">0</td><td contenteditable="true">4.5</td><td contenteditable="true">0.5</td><td contenteditable="true">40</td><td contenteditable="true">0</td><td contenteditable="true">0</td></tr>
           </tbody>
         </table>
         <div style="margin-top:12px;">
@@ -205,9 +205,9 @@
         <div class="brow"><span class="bk">原產地</span><span class="bv">台灣</span></div>
         <div class="brow"><span class="bk">有效日期</span><span class="bv">標示於瓶蓋</span></div>
         <div class="brow"><span class="bk">保存</span><span class="bv">未開封常溫陰涼處；開封後冷藏</span></div>
-        <div class="ballerg">過敏原：本產品含大豆、小麥製品，對其過敏者請留意。</div>
+        <div class="ballerg">過敏原：本產品含大豆製品，對其過敏者請留意。</div>
         <div class="bnutri">
-          <table>
+          <table id="labelNutri">
             <tr><th style="text-align:left;">營養標示（每份 15g）</th><th>每份</th></tr>
             <tr><td>熱量</td><td>— kcal</td></tr>
             <tr><td>蛋白質</td><td>— g</td></tr>
@@ -217,6 +217,7 @@
             <tr><td>鈉</td><td>— mg</td></tr>
           </table>
         </div>
+        <div class="brow"><span class="bk">登錄字號</span><span class="bv" contenteditable="true">食品業者登錄字號（待填）</span></div>
         <div class="bfoot">美之晨早餐店　台南市永康區鹽行里新興街 272 號　06-2434314</div>
       </div>
     </div>
@@ -275,45 +276,93 @@ loadAll();
 /* ---------- 營養試算 ---------- */
 function num(el){ var v = parseFloat(String(el.textContent).replace(/[^0-9.\-]/g,'')); return isNaN(v) ? 0 : v; }
 
+function servingGram(){
+  var sp = document.querySelector('#nutriTable thead span[contenteditable]');
+  var v = sp ? parseFloat(String(sp.textContent).replace(/[^0-9.]/g,'')) : 15;
+  return (v && v > 0) ? v : 15;
+}
+
 function calcNutri(){
   var rows = document.querySelectorAll('#calcTable tbody tr');
-  var keys = ['kcal','protein','fat','carb','sugar','na'];
-  var tot = { kcal:0, protein:0, fat:0, carb:0, sugar:0, na:0 };
-  var grams = 0;
+  var COLS = ['kcal','protein','fat','carb','sugar','na','satfat','transfat'];
+  var tot = { kcal:0, protein:0, fat:0, carb:0, sugar:0, na:0, satfat:0, transfat:0 };
+  var grams = 0, satFilled = false, satMissing = false;
 
   for (var i=0;i<rows.length;i++){
     var tds = rows[i].querySelectorAll('td');
+    if (tds.length < 10) continue;
     var w = num(tds[1]);
     if (!w) continue;
     grams += w;
-    for (var k=0;k<keys.length;k++){
-      tot[keys[k]] += num(tds[2 + k]) * w / 100;
+    for (var c=0;c<COLS.length;c++){
+      var val = num(tds[2 + c]);
+      tot[COLS[c]] += val * w / 100;
+      if (COLS[c] === 'satfat'){ if (val > 0) satFilled = true; else satMissing = true; }
     }
   }
 
   if (!grams){ document.getElementById('calcOut').innerHTML = '請先填入食材重量。'; return; }
 
-  var per100 = {};
-  for (var k=0;k<keys.length;k++){ per100[keys[k]] = tot[keys[k]] * 100 / grams; }
-  var perServing = {};
-  for (var k2=0;k2<keys.length;k2++){ perServing[keys[k2]] = per100[keys[k2]] * 15 / 100; }
-
+  var per100 = {}, perServing = {}, sg = servingGram();
+  for (var k=0;k<COLS.length;k++){
+    per100[COLS[k]] = tot[COLS[k]] * 100 / grams;
+    perServing[COLS[k]] = per100[COLS[k]] * sg / 100;
+  }
   function f1(v){ return (Math.round(v*10)/10).toFixed(1); }
-  function f0(v){ return Math.round(v); }
 
-  var h = '<b>整批重量：' + f0(grams) + ' 公克</b><br>'
-    + '<table style="max-width:460px;font-size:13px;margin-top:8px;">'
-    + '<tr><th style="width:34%">項目</th><th>每 100 公克</th><th>每份 15 公克</th></tr>'
+  /* 依「熱量、蛋白質、脂肪、飽和脂肪、反式脂肪、碳水、糖、鈉」順序寫入標示表 */
+  var showOrder = ['kcal','protein','fat','satfat','transfat','carb','sugar','na'];
+  var tbodyRows = document.querySelectorAll('#nutriTable tbody tr');
+  for (var r=0;r<showOrder.length && r<tbodyRows.length;r++){
+    var key = showOrder[r];
+    var tds2 = tbodyRows[r].querySelectorAll('td');
+    tds2[1].textContent = f1(per100[key]);
+    tds2[2].textContent = f1(perServing[key]);
+  }
+
+  /* 寫入瓶身貼紙（每份） */
+  var labelRows = document.querySelectorAll('#labelNutri tr');
+  var labelOrder = [
+    { i:1, key:'kcal',  unit:' kcal' },
+    { i:2, key:'protein', unit:' g' },
+    { i:3, key:'fat',   unit:' g' },
+    { i:4, key:'carb',  unit:' g' },
+    { i:5, key:'sugar', unit:' g' },
+    { i:6, key:'na',    unit:' mg' }
+  ];
+  for (var j=0;j<labelOrder.length;j++){
+    var o = labelOrder[j];
+    if (labelRows[o.i]){
+      var cell = labelRows[o.i].querySelectorAll('td')[1];
+      if (cell) cell.textContent = f1(perServing[o.key]) + o.unit;
+    }
+  }
+
+  var d = new Date();
+  var stamp = d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+  var warn = '';
+  if (!satFilled && satMissing) warn += '<br>・配方含油但「飽和脂肪」都還是 0，請查資料庫補上（大豆油約 15～16 g/100g），否則脂肪細項會偏低。';
+  if (per100.transfat === 0) warn += '<br>・反式脂肪為 0：若確認未使用氫化油，可直接標 0，符合法規。';
+  warn += '<br>・每份 ' + sg + ' 公克、本包裝 ' + Math.round(grams / sg) + ' 份（以試算總重 ' + Math.round(grams) + ' 公克計）。';
+
+  var h = '<b>整批重量：' + Math.round(grams) + ' 公克　｜　計算日期 ' + stamp + '</b>'
+    + '<p style="margin:8px 0 0;color:#2E7D5B;font-weight:700;">已自動套用到上方「二、營養標示」與「三、瓶身貼紙」，可直接列印。</p>'
+    + '<table style="max-width:520px;font-size:13px;margin-top:8px;">'
+    + '<tr><th style="width:34%">項目</th><th>每 100 公克</th><th>每份 ' + sg + ' 公克</th></tr>'
     + '<tr><td>熱量</td><td>' + f1(per100.kcal) + ' 大卡</td><td>' + f1(perServing.kcal) + ' 大卡</td></tr>'
     + '<tr><td>蛋白質</td><td>' + f1(per100.protein) + ' g</td><td>' + f1(perServing.protein) + ' g</td></tr>'
     + '<tr><td>脂肪</td><td>' + f1(per100.fat) + ' g</td><td>' + f1(perServing.fat) + ' g</td></tr>'
+    + '<tr><td>　飽和脂肪</td><td>' + f1(per100.satfat) + ' g</td><td>' + f1(perServing.satfat) + ' g</td></tr>'
+    + '<tr><td>　反式脂肪</td><td>' + f1(per100.transfat) + ' g</td><td>' + f1(perServing.transfat) + ' g</td></tr>'
     + '<tr><td>碳水化合物</td><td>' + f1(per100.carb) + ' g</td><td>' + f1(perServing.carb) + ' g</td></tr>'
-    + '<tr><td>糖</td><td>' + f1(per100.sugar) + ' g</td><td>' + f1(perServing.sugar) + ' g</td></tr>'
+    + '<tr><td>　糖</td><td>' + f1(per100.sugar) + ' g</td><td>' + f1(perServing.sugar) + ' g</td></tr>'
     + '<tr><td>鈉</td><td>' + f1(per100.na) + ' mg</td><td>' + f1(perServing.na) + ' mg</td></tr>'
     + '</table>'
-    + '<p style="font-size:12.5px;color:#B4472C;margin:8px 0 0;">試算值僅供參考，送印前請自行覆核或送驗。</p>';
+    + '<p style="font-size:12.5px;color:#B4472C;margin:8px 0 0;">此為依配方「計算值」（食品營養成分資料庫加權），非送驗報告；數值已寫入頁面並自動保存，送印前請自行覆核。</p>'
+    + '<p style="font-size:12.5px;color:#8E8079;margin:4px 0 0;">' + warn + '</p>';
 
   document.getElementById('calcOut').innerHTML = h;
+  saveAll();
 }
 </script>
 </body>
