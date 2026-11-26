@@ -2176,8 +2176,27 @@ function buildHours(){
     txt.textContent = '營業中・現在可以點餐';
   } else {
     dot.classList.add('off');
-    txt.textContent = '休息中・可先預訂';
+    txt.textContent = nextOpenText() || '休息中・可先預訂';
   }
+}
+
+/* 休息時講清楚「幾點開」：還沒開講倒數，收攤後講明天幾點 */
+function nextOpenText(){
+  var now = new Date();
+  var d = now.getDay();
+  var m = now.getHours() * 60 + now.getMinutes();
+  var o = (d === 5) ? 5*60 : 5*60 + 30;
+  var c = (d === 5) ? 11*60 + 30 : 11*60;
+  if (m >= o && m <= c) return '';
+  if (m < o){
+    var k = o - m;
+    return '現在休息中・再 ' + k + ' 分鐘開門（可先看菜單）';
+  }
+  var nd = (d + 1) % 7;
+  var no = (nd === 5) ? 5*60 : 5*60 + 30;
+  var hh = Math.floor(no / 60);
+  var mm = ('0' + (no % 60)).slice(-2);
+  return '今天已打烊・明天 ' + hh + ':' + mm + ' 開門（可先預訂）';
 }
 
 function isOpenNow(){

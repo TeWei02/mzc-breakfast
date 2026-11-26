@@ -24,6 +24,12 @@ A self-hosted ordering platform for **Mei Zhi Chen (美之晨)**, a breakfast sh
 | Payment codes | ATM / convenience-store code callbacks automatically write into the order note and set the status to "awaiting payment (code issued)" |
 | Food labeling | `sauce.html`: legal label, nutrition label and calculator, bottle sticker, shipping packaging notes |
 | Order management | Permanently delete a single order in the back office (with double confirmation), change the admin password online (no redeploy needed) |
+| Shop status | One click sets "closed today" (optional note) or marks items as sold out; the storefront shows a status bar, grays out sold-out cards, blocks ordering for those items and pauses ordering while closed (menu still visible) |
+| Order tracking | Customers track with order ID + last three digits of their phone: received → preparing → ready for pickup / out for delivery → completed; "order again" puts the items back in the cart (shipping fee skipped) |
+| Back-office search | Live fuzzy search by name / phone / order ID / item, one-click CSV export of the day |
+| KPI stats | Order count, revenue, average ticket, delivery vs. pickup split, status distribution, top sellers, hourly distribution |
+| New-order alert | Optional sound alert in the back office when a new order arrives |
+| Add to home screen | `manifest.webmanifest` with app icons, so the ordering page can be installed as a standalone app |
 
 ## Architecture
 
@@ -45,6 +51,8 @@ Back office admin.html ┘                    │
 | `index.html` | Customer ordering page (single file, inlined images) |
 | `admin.html` | Shop back office: order list, route planning, payment status, ECPay settings panel |
 | `sauce.html` | Chili sauce food labeling page: legal label, nutrition calculator, printable bottle sticker, shipping packaging |
+| `public/manifest.webmanifest` | PWA manifest (installable to the home screen, with 192/512 icons) |
+| `public/images/icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | App icons (orange tile with 晨) |
 | `route.png` | Delivery coverage map (currently unreferenced, kept as a spare) |
 | `上線操作說明.md` | Deployment and payment integration notes (Chinese) |
 | `README.md` | Chinese README (traditional Chinese) |
@@ -137,12 +145,15 @@ A separate `deploy` job is available through manual dispatch (`workflow_dispatch
 
 - [x] Chili sauce food labeling page (`sauce.html`) and shipping packaging notes
 - [x] Delete a single order in the back office, change the admin password online
+- [x] Connect Pages to GitHub auto-deploy (done and verified by a real push, 2026-11-27)
+- [x] Revoke the legacy all-permission API token `mzc-marvis` (2026-11-27)
 - [ ] Apply for the ECPay production store number and set the three keys
 - [ ] Fill in the food business registration number in `sauce.html`
 - [ ] Fill in nutrition values from a lab test or composition database
 - [ ] Decide whether to keep the legacy delivery map (`route.png`)
 - [ ] LINE official account (start with the free light tier)
 - [x] Test orders (T1115001540, T1115001606C) removed from the sheet (2026-11-25, 14 records left)
+- [x] v24 test orders cleared and shop status restored (2026-11-27, 0 orders for the day)
 
 ## License
 

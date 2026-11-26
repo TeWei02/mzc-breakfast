@@ -30,6 +30,12 @@
 | 訂單管理 | 後台可永久刪除單一訂單（二次確認）、線上修改管理密碼（不必重新部署） |
 | 日期查詢 | 後台篩選列可選「今天／昨天／全部」，也能直接點日期框查任何一天（統計與空狀態跟著該日走） |
 | 登入 | 後台只需輸入管理密碼；API 網址預設同網域 `/api`，一般不用改 |
+| 營業狀態 | 後台一鍵設「今日公休（可附說明）」或勾選品項售完；前台顯示狀態條、售完卡片灰化並攔截下單、公休時暫停接單（仍可看菜單） |
+| 訂單查詢 | 客人以「單號＋電話末三碼」查進度：已收到 → 製作中 → 可取餐／外送中 → 已完成；下方可「再來一單」把品項帶回購物車（自動跳過外送費） |
+| 後台搜尋 | 姓名／電話／單號／品項即時模糊搜尋，一鍵匯出當日訂單 CSV |
+| 營運統計 | 筆數、金額、客單價、外送／自取拆分、狀態分布、熱銷排行、每小時分布 |
+| 新單提示 | 後台可開提示音，新單進來自動響鈴並跳提示 |
+| 加到主畫面 | `manifest.webmanifest` 與 App 圖示，手機可把點餐頁存成獨立 App 樣式 |
 
 ## 系統架構
 
@@ -56,6 +62,8 @@
 | `public/admin.html` | 店家後台：訂單列表、出車排序、付款狀態、綠界設定面板 |
 | `public/sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
 | `public/_worker.js` | Pages Advanced Mode 代理層：`/api` 轉發 Apps Script，前端不再暴露 `/exec` |
+| `public/manifest.webmanifest` | PWA 設定：可加到手機主畫面（含 192／512 圖示） |
+| `public/images/icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | App 圖示（橙底白字「晨」） |
 | `public/_headers` | 安全標頭：全站 X-Frame-Options／nosniff／Referrer-Policy，後台 noindex＋no-store |
 | `public/images/` | 頁面用圖片 |
 | `index.html`／`admin.html`／`sauce.html`（根目錄） | 舊站轉址頁，導向新站 |
@@ -75,7 +83,10 @@
 
 ## 自動部署
 
-`mzc-breakfast` 已與 GitHub `TeWei02/mzc-breakfast` 的 `main` 分支連動：`git push` 後自動建置上線（建置指令留空、輸出目錄 `public`）。
+`mzc-breakfast` 已與 GitHub `TeWei02/mzc-breakfast` 的 `main` 分支連動：`git push` 後自動建置上線（建置指令留空、輸出目錄 `public`、根目錄留空、自動部署已啟用）。
+
+- 2026-11-27 實測：commit `9828858` 推送後 Cloudflare 自動產生部署 `880e9d53`（成功），不必再手動 `wrangler`。
+- `wrangler pages deploy public --project-name mzc-breakfast --branch main` 仍可用，作為臨時手動發布的備援。
 
 
 ## 後端 API
@@ -94,6 +105,9 @@
 | `ecpayCfg` | 讀取／儲存綠界設定（金鑰存 Script Properties） | 讀：否／寫：是 |
 | `deleteOrder`（POST） | 永久刪除試算表上該筆訂單（整列刪除，不可復原） | 是 |
 | `setToken`（POST） | 修改管理密碼，寫入指令碼屬性 `ADMIN_TOKEN` | 是（需舊密碼） |
+| `soldout` | 讀取（GET）／設定（POST：`closed`、`closedNote`、`items`）今日公休與售完品項 | 讀：否／寫：是 |
+| `track` | 客人查單進度：`id` ＋ `last3`（電話末三碼），回單號、品項、金額、狀態、ETA | 否 |
+| `stats` | 營運統計：筆數、金額、客單、外送／自取、狀態分布、熱銷、每小時 | 是 |
 
 > v23 起：`deleteOrder`／`delete`／`setToken` 用 GET 呼叫一律回 `ok:false`（只能用 POST），避免網址一按就假成功；不認得的 `action` 也回 `ok:false`。
 > 下單 `order` 有必填檢查：姓名、電話（至少 7 位數字）、至少一項餐點名稱、金額大於 0，外送另需地址，不符會回 `ok:false` 並附人類可讀的 `msg`。
@@ -168,12 +182,15 @@ clasp update-deployment <舊 deploymentId> -d "版本說明"   # 建新版本並
 
 - [x] 辣椒醬食品標示頁（`sauce.html`）與宅配包裝說明
 - [x] 後台可刪除單一訂單、線上修改管理密碼
+- [x] Pages 接 GitHub 自動部署（2026-11-27 完成並實測 push 觸發）
+- [x] 舊全權 API Token `mzc-marvis` 作廢（2026-11-27，僅留 `mzc-marvis-20261127`）
 - [ ] 綠界正式商店代號申請與三碼設定
 - [ ] 食品業者登錄字號填入 `sauce.html`
 - [ ] 營養標示數值送驗或依資料庫計算後填入
 - [ ] 舊版外送路線圖（`route.png`）是否移除
 - [ ] LINE 官方帳號（建議先開免費輕用量）
 - [x] 測試單（T1115001540、T1115001606C）已自試算表清除（2026-11-25，剩 14 筆）
+- [x] v24 自動測試單全數清除、售完／公休狀態復原（2026-11-27，今日 0 筆）
 
 ## 授權
 
