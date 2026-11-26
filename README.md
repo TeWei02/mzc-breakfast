@@ -11,6 +11,7 @@
 | 客人點餐 | https://mzc-breakfast.pages.dev/ | Cloudflare Pages 正式站 |
 | 店家後台 | https://mzc-breakfast.pages.dev/admin | 管理密碼登入（後端 Apps Script 驗證，含失敗限速） |
 | 食品標示 | https://mzc-breakfast.pages.dev/sauce | 公開 |
+| 客服與退換貨政策 | https://mzc-breakfast.pages.dev/policy | 公開（綠界送件審核用） |
 | 舊站 | https://tewei02.github.io/mzc-breakfast/ | 僅保留轉址頁，會自動導向新站 |
 
 > 舊站原為 GitHub Pages（免費方案不得作商業用途），已遷至 Cloudflare Pages；根目錄三個 HTML 現為轉址頁，舊連結與 QR code 不會失效。後端真實網址不再出現在任何前端檔案，也不寫進版控（見下方環境變數）。
@@ -30,6 +31,7 @@
 | 取號 | ATM／超商取號回呼自動寫入訂單備註與「待付款（已取號）」狀態 |
 | 食品標示 | `sauce.html`：辣椒醬包裝標示、營養標示與試算、瓶身貼紙、宅配包裝說明 |
 | 菜單 | `menu.html`：完整價目表大圖、點擊放大、列印、`Menu` 結構化資料；首頁頁頭設入口 |
+| 客服政策 | `policy.html`：客服聯絡、取消訂單、退換貨與退款（含運送異常）、金流說明、個資保護、食品業者登錄、消費爭議處理；`sauce.html` 填入登錄字號後自動同步顯示 |
 | 訂單管理 | 後台可永久刪除單一訂單（二次確認）、線上修改管理密碼（不必重新部署） |
 | 日期查詢 | 後台篩選列可選「今天／昨天／全部」，也能直接點日期框查任何一天（統計與空狀態跟著該日走） |
 | 登入 | 後台只需輸入管理密碼；API 網址預設同網域 `/api`，一般不用改 |
@@ -65,6 +67,7 @@
 | `public/admin.html` | 店家後台：訂單列表、出車排序、付款狀態、綠界設定面板 |
 | `public/sauce.html` | 辣椒醬食品標示頁：法定標示、營養標示試算、可列印瓶身貼紙、宅配包裝 |
 | `public/menu.html` | 菜單頁：`images/menu.jpg`（2000×737 網頁用）與 `images/menu-full.jpg`（原尺寸 2467×910） |
+| `public/policy.html` | 客服與退換貨政策頁：取消訂單、退款管道與時程、金流說明、個資、食品業者登錄字號、消費爭議（綠界賣家審核要件） |
 | `public/_worker.js` | Pages Advanced Mode 代理層：`/api` 轉發 Apps Script，前端不再暴露 `/exec` |
 | `public/manifest.webmanifest` | PWA 設定：可加到手機主畫面（含 192／512 圖示） |
 | `public/images/icon-192.png`、`icon-512.png`、`apple-touch-icon.png` | App 圖示（橙底白字「晨」） |
@@ -188,7 +191,9 @@ clasp update-deployment <舊 deploymentId> -d "版本說明"   # 建新版本並
 - [x] 後台可刪除單一訂單、線上修改管理密碼
 - [x] Pages 接 GitHub 自動部署（2026-11-27 完成並實測 push 觸發）
 - [x] 舊全權 API Token `mzc-marvis` 作廢（2026-11-27，僅留 `mzc-marvis-20261127`）
-- [ ] 綠界正式商店代號申請與三碼設定（照做步驟見 `輸出/美之晨_申辦清單_綠界與食品登錄_20261127.md`，個人賣家 7 項資料已列齊）
+- [x] 網站端合規頁面 `/policy`（客服、取消、退換貨與退款、金流、個資、爭議處理）已上線，首頁資訊卡與頁尾、菜單頁皆設入口（2026-11-27，commit `9fbcda9`）
+- [ ] 綠界送件環境照 3 張：實拍後放入 `~/Downloads/美之晨_環境照_待上傳/`（本機與雲端目前均無店家實拍原圖，AI 合成圖不可用）
+- [ ] 綠界正式商店代號申請與三碼設定（照抄版見 `輸出/美之晨_綠界個人賣家_申請資料表_20261127.md`，含網站合規自查與費率）
 - [ ] 食品業者登錄字號：至 fadenbook.fda.gov.tw 線上申辦，當日可取得 16 碼字號，填入 `sauce.html` 瓶身貼紙「登錄字號」欄
 - [x] 門牌統一為「臺南市永康區塩興里新行街 272 號」（與 Google 商家檔案、OSM 反查一致），全站 meta／頁尾／標示貼紙／菜單頁已同步
 - [x] 營養標示：v24.2 已內建一鍵試算（配方加權）並自動套用至標示表與貼紙；送驗後以報告數值覆蓋即可
