@@ -89,6 +89,12 @@
     transition:.16s;letter-spacing:.3px;
   }
   .filter button.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .filter .fdate{
+    flex:0 0 auto;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;
+    font-family:inherit;background:#fff;border:1px solid var(--line);color:var(--ink-2);
+    letter-spacing:.3px;
+  }
+  .filter .fdate.on{background:var(--ink);color:#fff;border-color:var(--ink);}
 
   main{max-width:820px;margin:0 auto;padding:16px 18px 0;}
 
@@ -338,6 +344,7 @@
   <button data-f="yesterday" onclick="setFilter(this)">昨天</button>
   <button data-f="all" onclick="setFilter(this)">最近全部</button>
   <button data-f="new" onclick="setFilter(this)">只看未處理</button>
+  <input class="fdate" type="date" id="fDate" onchange="pickDate(this)" title="自選日期">
   <button onclick="window.print()">列印</button>
 </div>
 
@@ -371,6 +378,7 @@ var API   = (function(){
 })();
 var TOKEN = localStorage.getItem('mzc_token') || '';
 var filterMode = 'today';
+var filterDate = '';        /* 自選日期（YYYY-MM-DD） */
 var cache = [];
 
 var LIST_URL = '';
@@ -583,18 +591,18 @@ function showSetup(){
 
   $('app').innerHTML =
     '<div class="setup">'
-    + '<h2>連線設定</h2>'
-    + '<p>貼上 Google Apps Script 部署後的「網頁應用程式網址」，以及你自己設定的管理密碼，就能在這裡看所有客人訂單。</p>'
-    + '<div class="fld"><label>訂單網址（結尾是 /exec）</label>'
-    + '<input id="inApi" type="url" placeholder="https://script.google.com/macros/s/AKfy.../exec" value="' + esc(API) + '"></div>'
+    + '<h2>輸入管理密碼</h2>'
+    + '<p>打上管理密碼就能看所有客人訂單。網址已預設為本站的 <b>/api</b>，一般不需要改。</p>'
     + '<div class="fld"><label>管理密碼</label>'
-    + '<input id="inToken" type="password" placeholder="在 Code.gs 裡設定的密碼" value="' + esc(TOKEN) + '"></div>'
-    + '<button class="btn-main" onclick="saveSetup()">儲存並載入訂單</button>'
+    + '<input id="inToken" type="password" placeholder="在 Code.gs 裡設定的密碼" value="' + esc(TOKEN) + '" onkeydown="if(event.key===\'Enter\')saveSetup()"></div>'
+    + '<div class="fld"><label>訂單網址（通常不用改）</label>'
+    + '<input id="inApi" type="text" placeholder="/api" value="' + esc(API) + '"></div>'
+    + '<button class="btn-main" onclick="saveSetup()">登入並載入訂單</button>'
     + (TOKEN ? '<button class="btn-main" style="background:#F1EBE6;color:#8E8079;margin-top:8px;" onclick="changeToken()">修改管理密碼</button>' : '')
     + '<div class="hint">'
-    + '① 網址一定要是「/exec」結尾，不是 /dev。<br>'
-    + '② 部署時「誰可以存取」要選「任何人」。<br>'
-    + '③ 這個網址請只給自己，不要放在客人看的網頁上。'
+    + '① 網址保持 <b>/api</b> 就好（本站代理到後端），也可以填 /exec 直連網址。<br>'
+    + '② 密碼錯誤會顯示提示，錯誤太多次會暫時被鎖，請稍等再試。<br>'
+    + '③ 這個頁面請只給自己，不要把密碼給客人。'
     + '</div></div>';
 }
 
@@ -602,16 +610,17 @@ function saveSetup(){
   var a = $('inApi').value.trim();
   var t = $('inToken').value.trim();
 
-  if (!a){ toast('請貼上網址'); return; }
-  if (a.indexOf('/exec') < 0 && a.indexOf('/dev') < 0){
-    toast('網址結尾需為 /exec'); return;
+  if (!a) a = '/api';                 /* 空白一律回同網域代理 */
+  if (a.charAt(0) !== '/' && !/^https?:\/\/\S+$/i.test(a)){
+    toast('網址格式不對：請填 /api，或 https:// 開頭的完整網址'); return;
   }
+  if (!t){ toast('請輸入管理密碼'); var it = $('inToken'); if (it) it.focus(); return; }
 
   API = a; TOKEN = t;
   localStorage.setItem('mzc_api', a);
   localStorage.setItem('mzc_token', t);
 
-  toast('已儲存');
+  toast('已登入');
   load();
 }
 
@@ -620,6 +629,7 @@ function saveSetup(){
    ============================================================ */
 function load(){
   if (!API){ showSetup(); return; }
+  if (!TOKEN){ showSetup(); return; }   /* 還沒有密碼就直接顯示輸入框，不要先打 API 報錯 */
 
   $('stats').style.display = '';
   $('filter').style.display = '';
@@ -635,6 +645,9 @@ function load(){
   else if (filterMode === 'yesterday'){
     var y = new Date(); y.setDate(y.getDate() - 1); day = dstr(y);
   }
+  else if (filterMode === 'day' && filterDate) day = filterDate;
+
+  if (day) $('subLine').textContent = '即時訂單 · ' + day;
 
   var url = API + '?action=list&token=' + encodeURIComponent(TOKEN);
   if (day) url += '&date=' + day;
@@ -673,11 +686,16 @@ function renderError(msg){
    ============================================================ */
 function updateStats(){
   var today = dstr(new Date());
+  var statDay = today;
+  if (filterMode === 'day' && filterDate) statDay = filterDate;
+  else if (filterMode === 'yesterday'){
+    var sd = new Date(); sd.setDate(sd.getDate() - 1); statDay = dstr(sd);
+  }
   var cnt = 0, sum = 0, pend = 0;
 
   for (var i=0;i<cache.length;i++){
     var o = cache[i];
-    var isToday = (o.date === today);
+    var isToday = (o.date === statDay);
     if (isToday && o.status !== 'cancel'){
       cnt++;
       sum += Number(o.total) || 0;
@@ -699,6 +717,19 @@ function setFilter(el){
   el.classList.add('on');
   filterMode = el.getAttribute('data-f');
   if (!filterMode) return;      /* 列印按鈕 */
+  var fd = $('fDate'); if (fd) fd.value = '';
+  filterDate = '';
+  load();
+}
+
+/* 自選日期：點日期框選一天，就只看那天的單 */
+function pickDate(el){
+  filterDate = el.value || '';
+  if (!filterDate){ setFilter($('filter').children[0]); return; }
+  var bs = $('filter').children;
+  for (var i=0;i<bs.length;i++) bs[i].classList.remove('on');
+  el.classList.add('on');
+  filterMode = 'day';
   load();
 }
 
@@ -716,7 +747,8 @@ function render(){
   if (!list.length){
     $('app').innerHTML = panel +
       '<div class="empty"><div class="big">🍽️</div>'
-      + (filterMode === 'new' ? '沒有未處理的訂單' : '這個時段還沒有訂單')
+      + (filterMode === 'new' ? '沒有未處理的訂單'
+        : (filterMode === 'day' ? '這天沒有訂單' : '這個時段還沒有訂單'))
       + '<br><span style="font-size:12px;">客人送出後會自動出現在這裡</span></div>';
     return;
   }
