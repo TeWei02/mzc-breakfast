@@ -67,7 +67,7 @@
 | `public/_headers` | 安全標頭：全站 X-Frame-Options／nosniff／Referrer-Policy，後台 noindex＋no-store |
 | `public/images/` | 頁面用圖片 |
 | `index.html`／`admin.html`／`sauce.html`（根目錄） | 舊站轉址頁，導向新站 |
-| `route.png` | 外送範圍示意圖（目前頁面未引用，保留備用） |
+| `images/og-cover.png` | 社群分享封面 1200×630（og:image／twitter:image） |
 | `上線操作說明.md` | 部署與金流操作紀錄 |
 | `README.md` / `README.en.md` | 中文／英文說明，頁首可互切 |
 | `scripts/check_static.py` | 靜態檔齊備、失效連結、標籤閉合、密鑰外洩檢查 |
@@ -184,10 +184,10 @@ clasp update-deployment <舊 deploymentId> -d "版本說明"   # 建新版本並
 - [x] 後台可刪除單一訂單、線上修改管理密碼
 - [x] Pages 接 GitHub 自動部署（2026-11-27 完成並實測 push 觸發）
 - [x] 舊全權 API Token `mzc-marvis` 作廢（2026-11-27，僅留 `mzc-marvis-20261127`）
-- [ ] 綠界正式商店代號申請與三碼設定
-- [ ] 食品業者登錄字號填入 `sauce.html`
-- [ ] 營養標示數值送驗或依資料庫計算後填入
-- [ ] 舊版外送路線圖（`route.png`）是否移除
+- [ ] 綠界正式商店代號申請與三碼設定（照做步驟見 `輸出/美之晨_申辦清單_綠界與食品登錄_20261127.md`，個人賣家 7 項資料已列齊）
+- [ ] 食品業者登錄字號：至 fadenbook.fda.gov.tw 線上申辦，當日可取得 16 碼字號，填入 `sauce.html` 瓶身貼紙「登錄字號」欄
+- [x] 營養標示：v24.2 已內建一鍵試算（配方加權）並自動套用至標示表與貼紙；送驗後以報告數值覆蓋即可
+- [x] 舊版外送路線圖 `route.png`：確認 repo 內已無此檔、頁面亦未引用（僅有同名 CSS class `.route`），項目關閉
 - [ ] LINE 官方帳號（建議先開免費輕用量）
 - [x] 測試單（T1115001540、T1115001606C）已自試算表清除（2026-11-25，剩 14 筆）
 - [x] v24 自動測試單全數清除、售完／公休狀態復原（2026-11-27，今日 0 筆）

@@ -155,7 +155,7 @@
         <tr><td>鈉</td><td contenteditable="true"><span class="fill">—</span></td><td contenteditable="true"><span class="fill">—</span></td></tr>
       </tbody>
     </table>
-    <p style="font-size:12.5px;color:#8E8079;margin:10px 0 0;">本包裝含 <span contenteditable="true" style="font-weight:700;color:#B4472C;">50</span> 份（以每份 15 公克計）。</p>
+    <p style="font-size:12.5px;color:#8E8079;margin:10px 0 0;">本包裝含 <span id="packServings" contenteditable="true" style="font-weight:700;color:#B4472C;">50</span> 份（以每份 15 公克計）。</p>
 
     <div class="note">
       <b>營養數字不要自己猜。</b>有兩條合法路徑：<br>
@@ -337,6 +337,9 @@ function calcNutri(){
       if (cell) cell.textContent = f1(perServing[o.key]) + o.unit;
     }
   }
+
+  var pkgEl = document.getElementById('packServings');
+  if (pkgEl) pkgEl.textContent = String(Math.round(grams / sg));
 
   var d = new Date();
   var stamp = d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
