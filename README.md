@@ -9,7 +9,7 @@
 | 入口 | 網址 | 備註 |
 |---|---|---|
 | 客人點餐 | https://mzc-breakfast.pages.dev/ | Cloudflare Pages 正式站 |
-| 店家後台 | https://mzc-breakfast.pages.dev/admin | Cloudflare Access 保護：寄一次性驗證碼到店主 Email |
+| 店家後台 | https://mzc-breakfast.pages.dev/admin | 管理密碼登入（後端 Apps Script 驗證，含失敗限速） |
 | 食品標示 | https://mzc-breakfast.pages.dev/sauce | 公開 |
 | 舊站 | https://tewei02.github.io/mzc-breakfast/ | 僅保留轉址頁，會自動導向新站 |
 
@@ -40,7 +40,7 @@
 
 - 前端：純靜態單檔 HTML，圖片內嵌，託管於 Cloudflare Pages（https，允許商業用途）
 - 代理：`public/_worker.js` 把同網域 `/api` 轉到 Apps Script，前端與原始碼都不再出現 `/exec`
-- 後台保護：Cloudflare Access（一次性驗證碼，僅店主 Email）
+- 後台保護：管理密碼登入（`admin.html` 輸入密碼，後端 Apps Script 以指令碼屬性 `ADMIN_TOKEN` 比對，含失敗次數限速；2026-11-26 已移除原本額外的 Cloudflare Access 一次性驗證碼層）
 - 後端：Google Apps Script，資料存 Google 試算表，免伺服器費用
 - 金流：綠界 ECPay 幕後建單 + 兩組回呼（付款結果 / 取號資訊）
 
