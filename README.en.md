@@ -68,24 +68,30 @@ Every request is a `POST` to the Apps Script `/exec` endpoint, dispatched by `ac
 
 ## Deployment
 
-### Frontend (GitHub Pages)
+### Frontend (Cloudflare Pages)
 
 ```bash
 git add .
 git commit -m "Update docs"
-git push origin main
+git push origin main          # version history only
+
+# Real publish: the Pages project is not linked to Git, upload public/ with wrangler
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... \
+  npx wrangler pages deploy public --project-name mzc-breakfast --branch main
 ```
 
-Pages goes live about a minute after the push (branch `main`, repository root).
+`public/` is the publish directory; `_worker.js` proxies same-origin `/api` to the Apps Script URL stored in the `BACKEND_URL` environment variable.
 
 ### Backend (Apps Script)
 
 ```bash
-clasp push          # upload Code.gs
-clasp deploy        # create a new version
+clasp push --force
+clasp update-deployment <old deploymentId> -d "release note"   # new version, same deployment
 ```
 
-> If the frontend has the `/exec` URL hard-coded, redeploy with `clasp deploy --deploymentId <old ID>` to update the same deployment; otherwise the frontend URL must be updated as well.
+> Always update the *same* deploymentId so the `/exec` URL does not change (`BACKEND_URL` stays valid). The production deployment ID starts with `AKfycbzNoO78…` (v23).
+
+> Since v23: `deleteOrder` / `delete` / `setToken` reject GET calls (`ok:false`), and unknown actions no longer return `ok:true`. `order` validates required fields (name, phone with ≥7 digits, at least one item name, total > 0, plus address for delivery).
 
 ### CI
 

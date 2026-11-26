@@ -28,6 +28,8 @@
 | 取號 | ATM／超商取號回呼自動寫入訂單備註與「待付款（已取號）」狀態 |
 | 食品標示 | `sauce.html`：辣椒醬包裝標示、營養標示與試算、瓶身貼紙、宅配包裝說明 |
 | 訂單管理 | 後台可永久刪除單一訂單（二次確認）、線上修改管理密碼（不必重新部署） |
+| 日期查詢 | 後台篩選列可選「今天／昨天／全部」，也能直接點日期框查任何一天（統計與空狀態跟著該日走） |
+| 登入 | 後台只需輸入管理密碼；API 網址預設同網域 `/api`，一般不用改 |
 
 ## 系統架構
 
@@ -93,26 +95,34 @@
 | `deleteOrder`（POST） | 永久刪除試算表上該筆訂單（整列刪除，不可復原） | 是 |
 | `setToken`（POST） | 修改管理密碼，寫入指令碼屬性 `ADMIN_TOKEN` | 是（需舊密碼） |
 
+> v23 起：`deleteOrder`／`delete`／`setToken` 用 GET 呼叫一律回 `ok:false`（只能用 POST），避免網址一按就假成功；不認得的 `action` 也回 `ok:false`。
+> 下單 `order` 有必填檢查：姓名、電話（至少 7 位數字）、至少一項餐點名稱、金額大於 0，外送另需地址，不符會回 `ok:false` 並附人類可讀的 `msg`。
+
 ## 部署
 
-### 前端（GitHub Pages）
+### 前端（Cloudflare Pages）
 
 ```bash
 git add .
 git commit -m "更新說明"
-git push origin main
+git push origin main          # 版本留存用
+
+# 實際發布：Pages 專案沒有接 Git，要用 wrangler 上傳 public/
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... \
+  npx wrangler pages deploy public --project-name mzc-breakfast --branch main
 ```
 
-推送後約 1 分鐘 Pages 自動生效（分支 `main`，根目錄）。
+`public/` 是發布目錄，`_worker.js` 會把同網域的 `/api` 代理到環境變數 `BACKEND_URL` 指向的 Apps Script。
 
 ### 後端（Apps Script）
 
 ```bash
-clasp push          # 上傳 Code.gs
-clasp deploy        # 建新版本
+clasp push --force
+clasp update-deployment <舊 deploymentId> -d "版本說明"   # 建新版本並更新同一部署
 ```
 
-> 若前端已寫死 `/exec` 網址，改版後要用 `clasp deploy --deploymentId <舊ID>` 更新同一部署，否則前端需跟著換網址。
+> 一定要更新「同一個 deploymentId」，`/exec` 網址才不會變（`BACKEND_URL` 不必改）。
+> 目前正式部署 ID 開頭為 `AKfycbzNoO78…`（v23）。
 
 ### CI（GitHub Actions）
 
