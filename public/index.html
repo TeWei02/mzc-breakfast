@@ -9,13 +9,16 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23E8734A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>晨</text></svg>">
 <meta name="apple-mobile-web-app-title" content="美之晨點餐">
 <meta name="format-detection" content="telephone=no">
-<link rel="canonical" href="https://tewei02.github.io/mzc-breakfast/">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="canonical" href="https://mzc-breakfast.pages.dev/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="美之晨 · 線上點餐">
 <meta property="og:locale" content="zh_TW">
 <meta property="og:title" content="美之晨 · 線上點餐｜台南永康 現做早餐">
 <meta property="og:description" content="台南永康新興街 272 號。吐司、漢堡、蛋餅、抓餅、丹麥、總匯與冷熱飲，外送自取皆可，線上付款。手作辣椒醬 750ml 一瓶 150 元。">
-<meta property="og:url" content="https://tewei02.github.io/mzc-breakfast/">
+<meta property="og:url" content="https://mzc-breakfast.pages.dev/">
 <meta property="og:image" content="https://tewei02.github.io/mzc-breakfast/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -729,6 +732,34 @@
   .two-col b{display:block;font-size:12.5px;font-weight:900;}
   .two-col small{display:block;font-size:10px;font-weight:600;color:var(--ink-3);margin-top:1px;line-height:1.45;}
 
+  /* ================= v24：售完／公休／查訂單 ================= */
+  .card.sold,.hot-card.sold{opacity:.42;filter:grayscale(1);}
+  .card.sold{cursor:not-allowed;}
+  .card.sold .add{width:auto;padding:0 7px;font-size:10.5px;font-weight:900;border-radius:8px;}
+  .hot-card.sold{position:relative;}
+  .hot-card.sold::after{content:'售完';position:absolute;top:6px;right:6px;background:#8C7B70;color:#fff;
+    font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:6px;}
+  .shopbar{max-width:var(--wrap);margin:12px auto 0;padding:0 14px;display:flex;align-items:center;gap:10px;}
+  .shopbar .sb-l{flex:1;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--ink-2);}
+  .shopbar .sb-btn{flex:0 0 auto;background:#fff;border:1.5px solid var(--brand);color:var(--brand-d);
+    border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer;}
+  .shopbar.closed{background:#FDEDE7;border:1px dashed #F0B6A0;border-radius:13px;padding:9px 12px;}
+  .shopbar.closed .sb-l{color:#B4472A;}
+  .trk-row{display:flex;gap:8px;margin-top:10px;}
+  .trk-row input{flex:1;min-width:0;padding:11px;border:1.5px solid var(--line);border-radius:11px;
+    font-family:inherit;font-size:14px;font-weight:700;}
+  .trk-res{margin-top:12px;font-size:13px;font-weight:700;line-height:1.7;}
+  .trk-card{border:1px solid var(--line);border-radius:13px;padding:12px;background:#FFFDFB;}
+  .trk-st{display:inline-block;background:var(--brand-l);color:var(--brand-d);border-radius:8px;
+    padding:2px 9px;font-size:12px;font-weight:900;}
+  .trk-steps{display:flex;gap:6px;margin:11px 0 4px;}
+  .trk-steps .s{flex:1;text-align:center;font-size:10px;font-weight:800;color:var(--ink-3);
+    border-top:3px solid #EEE3DA;padding-top:5px;}
+  .trk-steps .s.on{color:var(--brand-d);border-color:var(--brand);}
+  .trk-items{margin:8px 0 0;font-size:12px;font-weight:700;color:var(--ink-2);}
+  .trk-btn{margin-top:10px;width:100%;padding:11px;border:1.5px solid var(--brand);background:#fff;
+    color:var(--brand-d);border-radius:11px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;}
+
   /* ================= 寬螢幕：收掉兩側空白 ================= */
   @media(min-width:900px){
     :root{--wrap:1020px;}
@@ -795,6 +826,12 @@
   <button data-go="sec-info">店家資訊</button>
  </div>
 </nav>
+
+<!-- v24：營業狀態 + 查訂單入口 -->
+<div class="shopbar" id="shopBar">
+  <div class="sb-l"><span id="sbTxt">營業狀態確認中…</span></div>
+  <button class="sb-btn" onclick="openTrack()">查訂單進度</button>
+</div>
 
 <main>
 
@@ -1072,6 +1109,24 @@
       <button onclick="qtyStep(1)">+</button>
     </div>
     <button class="confirm" id="optConfirm" onclick="confirmOpt()">加入訂單</button>
+  </div>
+</div>
+
+<!-- ==================== 查訂單進度（v24） ==================== -->
+<div class="mask" id="trackMask" onclick="if(event.target===this)closeMask('trackMask')">
+  <div class="sheet">
+    <div class="grab"></div>
+    <button class="close-x" onclick="closeMask('trackMask')">✕</button>
+    <h3>查訂單進度</h3>
+    <p class="desc">輸入訂單編號與電話末三碼，看看現在做到哪一步。</p>
+    <div class="trk-row">
+      <input id="trkId" placeholder="訂單編號：A261127-1234" autocomplete="off">
+    </div>
+    <div class="trk-row">
+      <input id="trkLast3" placeholder="電話末三碼" inputmode="numeric" maxlength="3" autocomplete="off">
+      <button class="primary" style="flex:0 0 92px;margin:0;" onclick="doTrack()">查詢</button>
+    </div>
+    <div class="trk-res" id="trkRes"></div>
   </div>
 </div>
 
@@ -1927,6 +1982,10 @@ function buildOrderText(id){
 }
 
 function submitOrder(){
+  if (SHOP.closed){
+    toast('今日公休' + (SHOP.closedNote ? '：' + SHOP.closedNote : '') + '，暫停接單');
+    return;
+  }
   var name  = document.getElementById('fName').value.trim();
   var phone = document.getElementById('fPhone').value.trim();
   var addr  = document.getElementById('fAddr').value.trim();
@@ -1949,6 +2008,7 @@ function submitOrder(){
   }
 
   var id  = orderId();
+  try { localStorage.setItem('mzc_last_order', id); } catch (e0) {}
   var txt = buildOrderText(id);
 
   var payload = {
@@ -2171,6 +2231,156 @@ function bindNav(){
 }
 
 /* ==========================================================
+   v24：店家營業狀態（今日公休／售完）＋ 查訂單進度 ＋ 再來一單
+   ========================================================== */
+var SHOP = { closed:false, closedNote:'', items:[], updated:'' };
+
+function isSoldOut(nm){ return (SHOP.items || []).indexOf(String(nm || '').trim()) >= 0; }
+
+function loadShopState(){
+  fetch(CONFIG.orderApi + '?action=soldout', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (j && j.ok && j.state) SHOP = j.state;
+      applyShopState();
+    })
+    .catch(function(){ applyShopState(); });
+}
+
+function applyShopState(){
+  var bar = document.getElementById('shopBar');
+  var txt = document.getElementById('sbTxt');
+
+  if (SHOP.closed){
+    if (bar) bar.classList.add('closed');
+    if (txt) txt.textContent = '今日公休' + (SHOP.closedNote ? '：' + SHOP.closedNote : '') + '（菜單可先看）';
+  } else {
+    if (bar) bar.classList.remove('closed');
+    if (txt) txt.textContent = isOpenNow() ? '現在有開・可以直接下單' : '現在休息中・可先看菜單再預訂';
+  }
+
+  var cards = document.querySelectorAll('#grid-sandwich .card,#grid-jam .card,#grid-drink .card,#grid-noodle .card,#grid-cn .card,#grid-fry .card,#grid-pan .card,#hotScroll .hot-card');
+  for (var i=0;i<cards.length;i++){
+    var el = cards[i];
+    var nmEl = el.querySelector('.nm') || el.querySelector('.hc-n');
+    if (!nmEl) continue;
+    var nm = nmEl.textContent.trim();
+    if (isSoldOut(nm)){
+      el.classList.add('sold');
+      var add = el.querySelector('.add');
+      if (add) add.textContent = '售完';
+    } else if (el.classList.contains('sold')){
+      el.classList.remove('sold');
+      var add2 = el.querySelector('.add');
+      if (add2) add2.textContent = '+';
+    }
+  }
+}
+
+/* 售完品項：在捕獲階段攔掉點擊，不動原本的 onclick */
+document.addEventListener('click', function(e){
+  var hit = e.target && e.target.closest ? e.target.closest('.card.sold,.hot-card.sold') : null;
+  if (hit){
+    e.preventDefault();
+    e.stopPropagation();
+    toast('這項今天賣完了，換一個好嗎');
+  }
+}, true);
+
+/* ---------- 查訂單進度 ---------- */
+function openTrack(){
+  try {
+    var lastId = localStorage.getItem('mzc_last_order') || '';
+    var last3 = localStorage.getItem('mzc_last3') || '';
+    var i1 = document.getElementById('trkId'), i2 = document.getElementById('trkLast3');
+    if (i1 && lastId && !i1.value) i1.value = lastId;
+    if (i2 && last3 && !i2.value) i2.value = last3;
+  } catch (err) {}
+  openMask('trackMask');
+  setTimeout(function(){
+    var b = document.getElementById('trkId');
+    if (b && !b.value) b.focus();
+  }, 260);
+}
+
+function doTrack(){
+  var id = (document.getElementById('trkId').value || '').trim().toUpperCase();
+  var l3 = (document.getElementById('trkLast3').value || '').replace(/[^0-9]/g, '');
+  var box = document.getElementById('trkRes');
+
+  if (!id){ toast('請輸入訂單編號'); return; }
+  if (l3.length < 3){ toast('請輸入電話末三碼'); return; }
+
+  box.innerHTML = '查詢中…';
+  fetch(CONFIG.orderApi + '?action=track&id=' + encodeURIComponent(id) + '&last3=' + encodeURIComponent(l3), {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (!j || !j.ok){
+        box.innerHTML = '<span style="color:#B4472A;">' + ((j && j.msg) || '查不到這筆訂單') + '</span>';
+        return;
+      }
+      try {
+        localStorage.setItem('mzc_last_order', j.id);
+        localStorage.setItem('mzc_last3', l3);
+      } catch (err) {}
+
+      var pickup = (j.way !== '外送');
+      var steps = pickup ? ['已收到','製作中','可取餐','已完成'] : ['已收到','製作中','外送中','已完成'];
+      var keys  = ['new','making', pickup ? 'done' : 'shipped', 'done'];
+      var idx = ['new','making','shipped','done'].indexOf(j.status);
+
+      var h = '<div class="trk-card">';
+      h += '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
+        +  '<b style="font-size:14px;">' + j.id + '</b>'
+        +  '<span class="trk-st">' + (j.statusText || j.status) + '</span></div>';
+
+      if (j.status !== 'cancel'){
+        h += '<div class="trk-steps">';
+        for (var i=0;i<4;i++){
+          var on = (idx >= 0 && idx >= i) ? ' on' : '';
+          h += '<div class="s' + on + '">' + steps[i] + '</div>';
+        }
+        h += '</div>';
+      }
+
+      h += '<div style="font-size:12px;color:var(--ink-3);font-weight:700;">'
+        +  (j.date || '') + ' ' + (j.time || '') + '・' + (j.way || '') + (j.zone ? '（' + j.zone + '）' : '')
+        +  (j.etaText ? '・預估 ' + j.etaText : '') + '</div>';
+
+      var its = j.items || [], li = '';
+      for (var k=0;k<its.length;k++){
+        li += (its[k].name || '') + ' ×' + (its[k].qty || 1) + '　';
+      }
+      if (li) h += '<div class="trk-items">' + li + '</div>';
+      h += '<div class="trk-items">合計 NT$' + (j.total || 0) + '</div>';
+      if (j.note) h += '<div class="trk-items">備註：' + j.note + '</div>';
+
+      h += '<button class="trk-btn" onclick="reorder(\'' + j.id + '\')">再來一單（把品項加回訂單）</button>';
+      h += '</div>';
+      box.innerHTML = h;
+      window.__lastTrack = j;
+    })
+    .catch(function(){
+      box.innerHTML = '<span style="color:#B4472A;">連線失敗，請稍後再試</span>';
+    });
+}
+
+function reorder(){
+  var j = window.__lastTrack;
+  if (!j || !j.items || !j.items.length){ toast('沒有可加回的品項'); return; }
+  var n = 0;
+  for (var i=0;i<j.items.length;i++){
+    var it = j.items[i];
+    if (!it || !it.name || it.name === '外送費') continue;
+    var q = Number(it.qty) || 1;
+    for (var k=0;k<q;k++){ addSimple(it.name, Number(it.price) || 0, true); }
+    n += q;
+  }
+  closeMask('trackMask');
+  toast(n ? ('已加回 ' + n + ' 項，去結帳吧') : '沒有可加回的品項');
+}
+
+/* ==========================================================
    啟動
    ========================================================== */
 buildMenus();
@@ -2182,6 +2392,8 @@ updatePayNote();
 updateEta();
 renderCart();
 initMap();
+loadShopState();
+setInterval(loadShopState, 5 * 60 * 1000);
 </script>
 </body>
 </html>

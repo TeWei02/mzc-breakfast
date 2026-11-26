@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#2B2320">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -309,6 +310,26 @@
     .order{break-inside:avoid;box-shadow:none;border:1px solid #bbb;margin-bottom:8px;}
     main{padding:0;}
   }
+  /* ================= v24：售完／公休面板、搜尋 ================= */
+  .shop-mask{position:fixed;inset:0;background:rgba(60,40,30,.45);display:none;align-items:center;
+    justify-content:center;z-index:1200;padding:16px;}
+  .shop-mask.show{display:flex;}
+  .shop-box{background:#fff;border-radius:18px;padding:18px;max-width:520px;width:100%;
+    max-height:86vh;overflow:auto;box-shadow:0 18px 50px rgba(0,0,0,.22);}
+  .shop-box h3{margin:0 0 6px;font-size:17px;}
+  .shop-box .hint{font-size:12px;color:#8C7B70;line-height:1.6;}
+  .shop-box .field{width:100%;padding:10px;border:1.5px solid #EDE1D8;border-radius:11px;
+    font-family:inherit;font-size:14px;font-weight:700;box-sizing:border-box;}
+  .sold-chip{display:inline-flex;align-items:center;gap:7px;background:#FBE9E2;color:#B4472A;
+    border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800;margin:0 6px 6px 0;}
+  .sold-chip b{cursor:pointer;font-size:13px;opacity:.75;}
+  .sold-chip b:hover{opacity:1;}
+  .quick-nm{display:inline-block;border:1px dashed #E2D3C8;border-radius:999px;padding:4px 10px;
+    font-size:11.5px;font-weight:800;color:#7A6A60;margin:0 5px 5px 0;cursor:pointer;background:#FFFDFB;}
+  .quick-nm:hover{border-color:#C9562F;color:#C9562F;}
+  #filter #q{min-width:140px;padding:7px 10px;border:1.5px solid #EDE1D8;border-radius:999px;
+    font-family:inherit;font-size:12px;font-weight:700;outline:none;}
+  #filter #q:focus{border-color:#C9562F;}
 </style>
 </head>
 <body>
@@ -337,6 +358,8 @@
   <div class="stat"><div class="k">今日筆數</div><div class="v" id="stCount">0</div></div>
   <div class="stat brand"><div class="k">今日金額</div><div class="v" id="stMoney">0</div></div>
   <div class="stat"><div class="k">待處理</div><div class="v" id="stNew">0</div></div>
+  <div class="stat"><div class="k">客單價</div><div class="v" id="stAvg">0</div></div>
+  <div class="stat"><div class="k">外送/自取</div><div class="v" id="stWay">0/0</div></div>
 </div>
 
 <div class="filter" id="filter" style="display:none;">
@@ -346,6 +369,10 @@
   <button data-f="new" onclick="setFilter(this)">只看未處理</button>
   <input class="fdate" type="date" id="fDate" onchange="pickDate(this)" title="自選日期">
   <button onclick="window.print()">列印</button>
+  <input type="text" id="q" placeholder="搜姓名／電話／單號／品項" oninput="onSearch(this)">
+  <button onclick="exportCSV()">匯出 CSV</button>
+  <button onclick="showShop()">售完／公休</button>
+  <button id="soundBtn" onclick="toggleSound()" title="新訂單提示音">🔔 提示音</button>
 </div>
 
 <main>
@@ -353,6 +380,36 @@
 </main>
 
 <div class="toast" id="toast"></div>
+
+<!-- v24 營業狀態／售完品項 -->
+<div class="shop-mask" id="shopMask" onclick="if(event.target===this)closeShop()">
+  <div class="shop-box">
+    <h3>今日營業狀態 · 售完品項</h3>
+    <div class="hint">存檔後前臺立刻生效（前臺每 5 分鐘自動同步）。</div>
+
+    <label style="display:flex;align-items:center;gap:9px;margin:14px 0 8px;font-weight:900;">
+      <input type="checkbox" id="ckClosed" onchange="toggleClosed(this)">
+      <span>今天公休（前臺會擋下單並顯示原因）</span>
+    </label>
+    <input class="field" type="text" id="closedNote" placeholder="公休原因，例如：臨時休息、颱風天" maxlength="60">
+
+    <div style="font-weight:900;margin:16px 0 8px;">已售完品項</div>
+    <div id="soldList" style="min-height:30px;"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input class="field" type="text" id="soldInput" placeholder="品項名稱，多個用逗號分隔">
+      <button class="btn-main" style="flex:0 0 auto;padding:10px 15px;" onclick="addSold()">加入</button>
+    </div>
+
+    <div style="font-weight:900;margin:15px 0 6px;font-size:12px;color:#8C7B70;">今日訂單裡出現過的品項（點一下標售完）</div>
+    <div id="soldQuick"></div>
+
+    <div class="row" style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeShop()">關閉</button>
+      <button class="main" onclick="saveShop()">儲存</button>
+    </div>
+  </div>
+</div>
 
 <!-- 出車通知文案 -->
 <div class="ntf" id="ntf">
@@ -665,10 +722,206 @@ function load(){
     }
 
     cache = data.orders || [];
+    notifyNew(cache);
     render();
     updateStats();
     refreshRoute();
   });
+}
+
+/* ============================================================
+   v24：搜尋、新單提示音、客單價／外送比、CSV、售完與公休
+   ============================================================ */
+var ST_NAME = { new:'新訂單', making:'製作中', shipped:'運送中', done:'已完成', cancel:'已取消' };
+var searchQ = '';
+
+function onSearch(el){
+  searchQ = (el.value || '').trim().toLowerCase();
+  render();
+}
+
+function exportCSV(){
+  if (!cache || !cache.length){ toast('目前沒有資料可匯出'); return; }
+  var head = ['單號','日期','時間','姓名','電話','方式','區域','地址','付款','付款狀態','金額','狀態','備註','品項'];
+  var rows = [head];
+  for (var i=0;i<cache.length;i++){
+    var o = cache[i], its = o.items || [], li = [];
+    for (var k=0;k<its.length;k++){ li.push((its[k].name || '') + 'x' + (its[k].qty || 1)); }
+    rows.push([o.id, o.date, o.time, o.name, o.phone, o.way, o.zone || '', o.addr || '',
+      o.pay, o.payStatus || '', o.total, ST_NAME[o.status] || o.status, o.note || '', li.join(' / ')]);
+  }
+  var out = '\ufeff' + rows.map(function(r){
+    return r.map(function(c){
+      return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"';
+    }).join(',');
+  }).join('\r\n');
+  var blob = new Blob([out], {type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '美之晨訂單_' + ((filterMode === 'day' && filterDate) ? filterDate : dstr(new Date())) + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 3000);
+  toast('已匯出 ' + cache.length + ' 筆訂單');
+}
+
+/* ---------- 新訂單提示音 ---------- */
+var soundOn = true;
+try { soundOn = (localStorage.getItem('mzc_sound') || '1') === '1'; } catch (e) {}
+
+function paintSoundBtn(){
+  var b = $('soundBtn');
+  if (b) b.textContent = soundOn ? '🔔 提示音' : '🔕 靜音';
+}
+paintSoundBtn();
+
+function toggleSound(){
+  soundOn = !soundOn;
+  try { localStorage.setItem('mzc_sound', soundOn ? '1' : '0'); } catch (e) {}
+  paintSoundBtn();
+  if (soundOn) beep();
+  else toast('已關閉提示音');
+}
+
+var audioCtx = null;
+function beep(){
+  if (!soundOn) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    var f = [880, 1174], t0 = audioCtx.currentTime;
+    for (var i=0;i<f.length;i++){
+      var osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f[i];
+      g.gain.setValueAtTime(0.0001, t0 + i*0.26);
+      g.gain.exponentialRampToValueAtTime(0.3, t0 + i*0.26 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + i*0.26 + 0.22);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(t0 + i*0.26); osc.stop(t0 + i*0.26 + 0.24);
+    }
+  } catch (e) {}
+}
+
+var lastNewIds = null;
+function notifyNew(orders){
+  var ids = [];
+  for (var i=0;i<orders.length;i++){
+    if (orders[i] && orders[i].status === 'new') ids.push(orders[i].id);
+  }
+  if (lastNewIds){
+    var added = 0;
+    for (var j=0;j<ids.length;j++){ if (lastNewIds.indexOf(ids[j]) < 0) added++; }
+    if (added > 0){
+      beep();
+      toast('有 ' + added + ' 筆新訂單');
+    }
+  }
+  lastNewIds = ids;
+}
+
+/* ---------- 售完品項／今日公休 ---------- */
+var SHOPST = { closed:false, closedNote:'', items:[] };
+
+function showShop(){
+  if (!API || !TOKEN){ toast('請先完成連線設定'); return; }
+  $('shopMask').classList.add('show');
+  $('soldList').innerHTML = '<span style="color:#8C7B70;font-size:12px;">載入中…</span>';
+  loadShopState();
+}
+
+function closeShop(){ $('shopMask').classList.remove('show'); }
+
+function loadShopState(){
+  fetch(API + '?action=soldout', {cache:'no-store'})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (j && j.ok && j.state) SHOPST = j.state;
+      renderShop();
+    })
+    .catch(function(){ renderShop(); });
+}
+
+function renderShop(){
+  $('ckClosed').checked = !!SHOPST.closed;
+  $('closedNote').value = SHOPST.closedNote || '';
+
+  var items = SHOPST.items || [], h = '';
+  if (!items.length){
+    h = '<span style="color:#8C7B70;font-size:12px;">目前沒有售完的品項</span>';
+  } else {
+    for (var i=0;i<items.length;i++){
+      h += '<span class="sold-chip">' + esc(items[i])
+        +  ' <b onclick="rmSold(\'' + String(items[i]).replace(/'/g, "\\'") + '\')">✕</b></span>';
+    }
+  }
+  $('soldList').innerHTML = h;
+
+  /* 今日訂單出現過的品項，點一下就能標售完 */
+  var seen = {}, q = '';
+  for (var j=0;j<cache.length;j++){
+    var its = cache[j].items || [];
+    for (var k=0;k<its.length;k++){
+      var nm = (its[k].name || '').trim();
+      if (!nm || nm === '外送費' || seen[nm]) continue;
+      seen[nm] = 1;
+      if (items.indexOf(nm) < 0) q += '<span class="quick-nm" onclick="addSoldName(\'' + nm.replace(/'/g, "\\'") + '\')">' + esc(nm) + '</span>';
+    }
+  }
+  $('soldQuick').innerHTML = q || '<span style="color:#8C7B70;font-size:12px;">今天還沒有訂單</span>';
+}
+
+function toggleClosed(el){ SHOPST.closed = !!el.checked; }
+
+function addSoldName(nm){
+  nm = String(nm || '').trim();
+  if (!nm) return;
+  if (!SHOPST.items) SHOPST.items = [];
+  if (SHOPST.items.indexOf(nm) < 0) SHOPST.items.push(nm);
+  saveShop();
+}
+
+function addSold(){
+  var el = $('soldInput');
+  var raw = (el.value || '').trim();
+  if (!raw){ toast('請先輸入品項名稱'); return; }
+  var parts = raw.split(/[,，、;；\s]+/), n = 0;
+  if (!SHOPST.items) SHOPST.items = [];
+  for (var i=0;i<parts.length;i++){
+    var nm = parts[i].trim();
+    if (!nm) continue;
+    if (SHOPST.items.indexOf(nm) < 0){ SHOPST.items.push(nm); n++; }
+  }
+  if (!n){ toast('這些品項已經在售完清單裡'); return; }
+  el.value = '';
+  saveShop();
+}
+
+function rmSold(nm){
+  var keep = [];
+  for (var i=0;i<(SHOPST.items || []).length;i++){
+    if (SHOPST.items[i] !== nm) keep.push(SHOPST.items[i]);
+  }
+  SHOPST.items = keep;
+  saveShop();
+}
+
+function saveShop(){
+  SHOPST.closedNote = ($('closedNote').value || '').trim().slice(0, 60);
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      action: 'soldout', token: TOKEN,
+      closed: !!SHOPST.closed, closedNote: SHOPST.closedNote, items: SHOPST.items || []
+    })
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d || !d.ok){ toast('儲存失敗：' + ((d && d.msg) || '未知')); return; }
+      if (d.state) SHOPST = d.state;
+      renderShop();
+      toast('已更新，前臺生效');
+    })
+    .catch(function(e){ toast('儲存失敗：' + e); });
 }
 
 function renderError(msg){
@@ -706,6 +959,16 @@ function updateStats(){
   $('stCount').textContent = cnt;
   $('stMoney').textContent = sum >= 1000 ? (sum/1000).toFixed(1) + 'k' : sum;
   $('stNew').textContent = pend;
+
+  /* v24：客單價與外送／自取分布 */
+  var dv = 0, pk = 0;
+  for (var m=0;m<cache.length;m++){
+    var od = cache[m];
+    if (od.date !== statDay || od.status === 'cancel') continue;
+    if (od.way === '外送') dv++; else pk++;
+  }
+  if ($('stAvg')) $('stAvg').textContent = cnt ? Math.round(sum / cnt) : 0;
+  if ($('stWay')) $('stWay').textContent = dv + '/' + pk;
 }
 
 /* ============================================================
@@ -734,8 +997,12 @@ function pickDate(el){
 }
 
 function passFilter(o){
-  if (filterMode === 'new') return o.status === 'new';
-  return true;
+  if (filterMode === 'new' && o.status !== 'new') return false;
+  if (!searchQ) return true;
+  var hay = [o.id, o.name, o.phone, o.addr || '', o.note || '', o.total, o.zone || ''].join(' ');
+  var its = o.items || [];
+  for (var i=0;i<its.length;i++){ hay += ' ' + (its[i].name || ''); }
+  return hay.toLowerCase().indexOf(searchQ) >= 0;
 }
 
 function render(){
